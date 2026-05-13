@@ -1,0 +1,423 @@
+const entryForm = document.getElementById("entryForm");
+const entryList = document.getElementById("entryList");
+const exportCsvBtn = document.getElementById("exportCsvBtn");
+
+const totalDevicesEl = document.getElementById("totalDevices");
+const avgTimeEl = document.getElementById("avgTime");
+const totalErrorsEl = document.getElementById("totalErrors");
+const efficiencyScoreEl = document.getElementById("efficiencyScore");
+
+const searchInput = document.getElementById("searchInput");
+const filterDate = document.getElementById("filterDate");
+const clearFiltersBtn = document.getElementById("clearFiltersBtn");
+const sortSelect = document.getElementById("sortSelect");
+
+let entries = JSON.parse(localStorage.getItem("opsTrackerEntries")) || [];
+let editingId = null;
+let efficiencyChartInstance = null;
+
+function saveEntries() {
+  localStorage.setItem("opsTrackerEntries", JSON.stringify(entries));
+}
+
+function getWorkingTime(entry) {
+  return Math.max(entry.actualTime - entry.downtime, 1);
+}
+
+function getEfficiency(entry) {
+  return Math.round((entry.estimatedTime / getWorkingTime(entry)) * 100);
+}
+
+function getFilteredAndSortedEntries() {
+  const searchValue = searchInput.value.toLowerCase();
+  const selectedDate = filterDate.value;
+
+  const filteredEntries = entries.filter((entry) => {
+    const matchesSearch = entry.deviceType.toLowerCase().includes(searchValue);
+    const matchesDate = !selectedDate || entry.date === selectedDate;
+
+    return matchesSearch && matchesDate;
+  });
+
+  return [...filteredEntries].sort((a, b) => {
+    if (sortSelect.value === "newest") return b.id - a.id;
+    if (sortSelect.value === "oldest") return a.id - b.id;
+    if (sortSelect.value === "best") return getEfficiency(b) - getEfficiency(a);
+    if (sortSelect.value === "worst") return getEfficiency(a) - getEfficiency(b);
+    if (sortSelect.value === "errors") return b.errors - a.errors;
+
+    return 0;
+  });
+}
+
+function getEfficiencyClass(efficiency) {
+  if (efficiency >= 120) return "efficiency-green";
+  if (efficiency >= 90) return "efficiency-orange";
+  return "efficiency-red";
+}
+
+function updateStats() {
+  const totalDevices = entries.length;
+
+  const totalEstimatedTime = entries.reduce(
+    (sum, entry) => sum + entry.estimatedTime,
+    0
+  );
+
+  const totalWorkingTime = entries.reduce(
+    (sum, entry) => sum + getWorkingTime(entry),
+    0
+  );
+
+  const totalErrors = entries.reduce((sum, entry) => sum + entry.errors, 0);
+
+  const efficiency =
+    totalWorkingTime > 0
+      ? Math.round((totalEstimatedTime / totalWorkingTime) * 100)
+      : 0;
+
+  totalDevicesEl.textContent = totalDevices;
+  avgTimeEl.textContent =
+    totalDevices > 0 ? `${Math.round(totalWorkingTime / totalDevices)} min` : "0 min";
+  totalErrorsEl.textContent = totalErrors;
+  efficiencyScoreEl.textContent = `${efficiency}%`;
+
+  if (efficiency >= 120) {
+    efficiencyScoreEl.style.color = "#4ade80";
+  } else if (efficiency >= 90) {
+    efficiencyScoreEl.style.color = "#facc15";
+  } else {
+    efficiencyScoreEl.style.color = "#f87171";
+  }
+}
+
+function renderChart() {
+  const chartWrapper = document.querySelector(".chart-wrapper");
+
+  if (efficiencyChartInstance) {
+    efficiencyChartInstance.destroy();
+    efficiencyChartInstance = null;
+  }
+
+  if (entries.length === 0) {
+    chartWrapper.innerHTML = `
+      <div class="chart-empty-state">
+        <div class="chart-empty-icon">📊</div>
+        <h3>No performance data yet</h3>
+        <p>
+          Add your first operational task entry to generate analytics and efficiency insights.
+        </p>
+      </div>
+    `;
+
+    return;
+  }
+
+  chartWrapper.innerHTML = `
+    <canvas id="efficiencyChart"></canvas>
+  `;
+
+  const canvas = document.getElementById("efficiencyChart");
+  const displayEntries = getFilteredAndSortedEntries();
+
+  if (displayEntries.length === 0) {
+    chartWrapper.innerHTML = `
+      <div class="chart-empty-state">
+        <div class="chart-empty-icon">🔎</div>
+        <h3>No matching chart data</h3>
+        <p>
+          Try adjusting your search, date filter, or sorting options.
+        </p>
+      </div>
+    `;
+
+    return;
+  }
+
+  const labels = displayEntries.map(
+    (entry) => `${entry.deviceType} (${entry.date})`
+  );
+
+  const data = displayEntries.map((entry) => getEfficiency(entry));
+
+  const colors = data.map((efficiency) => {
+    if (efficiency >= 120) return "#4ade80";
+    if (efficiency >= 90) return "#facc15";
+    return "#f87171";
+  });
+
+  efficiencyChartInstance = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: "Efficiency %",
+          data: data,
+          backgroundColor: colors,
+          borderRadius: 8
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: "#9ca3af"
+          },
+          grid: {
+            color: "#374151"
+          }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: "#9ca3af"
+          },
+          grid: {
+            color: "#374151"
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderEntries() {
+  entryList.innerHTML = "";
+
+  if (entries.length === 0) {
+    entryList.innerHTML = `
+      <p class="empty-state">No entries yet. Add your first work entry.</p>
+    `;
+    return;
+  }
+
+  const displayEntries = getFilteredAndSortedEntries();
+
+  if (displayEntries.length === 0) {
+    entryList.innerHTML = `
+      <p class="empty-state">No matching entries found.</p>
+    `;
+    return;
+  }
+
+  displayEntries.forEach((entry) => {
+    const entryWorkingTime = getWorkingTime(entry);
+    const entryEfficiency = getEfficiency(entry);
+    const efficiencyClass = getEfficiencyClass(entryEfficiency);
+
+    const entryCard = document.createElement("article");
+    entryCard.className = "entry-card";
+
+    entryCard.innerHTML = `
+      <div class="entry-card-header">
+        <div>
+          <h3>${entry.deviceType}</h3>
+          <p class="entry-date">${entry.date}</p>
+        </div>
+
+        <div class="entry-actions">
+          <span class="efficiency-badge ${efficiencyClass}">
+            ${entryEfficiency}%
+          </span>
+
+          <button class="edit-btn" data-id="${entry.id}">Edit</button>
+          <button class="delete-btn" data-id="${entry.id}">Delete</button>
+        </div>
+      </div>
+
+      <div class="entry-details">
+        <p><strong>${entry.estimatedTime}</strong> min estimated</p>
+        <p><strong>${entry.actualTime}</strong> min actual</p>
+        <p><strong>${entryWorkingTime}</strong> min working time</p>
+        <p><strong>${entry.errors}</strong> errors</p>
+        <p><strong>${entry.downtime}</strong> min downtime</p>
+      </div>
+
+      ${entry.notes ? `<p class="entry-notes">${entry.notes}</p>` : ""}
+    `;
+
+    entryList.appendChild(entryCard);
+  });
+}
+
+function exportToCsv() {
+  if (entries.length === 0) {
+    alert("No entries to export yet.");
+    return;
+  }
+
+  const headers = [
+    "Date",
+    "Device Type",
+    "Estimated Time",
+    "Actual Time",
+    "Downtime",
+    "Working Time",
+    "Errors",
+    "Efficiency",
+    "Notes"
+  ];
+
+  const rows = entries.map((entry) => [
+    entry.date,
+    entry.deviceType,
+    entry.estimatedTime,
+    entry.actualTime,
+    entry.downtime,
+    getWorkingTime(entry),
+    entry.errors,
+    `${getEfficiency(entry)}%`,
+    entry.notes
+  ]);
+
+  const csvContent = [headers, ...rows]
+    .map((row) =>
+      row
+        .map((value) => `"${String(value).replaceAll('"', '""')}"`)
+        .join(",")
+    )
+    .join("\n");
+
+  const blob = new Blob([csvContent], {
+    type: "text/csv;charset=utf-8;"
+  });
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = "operational-performance-dashboard-export.csv";
+  link.click();
+
+  URL.revokeObjectURL(url);
+}
+
+function editEntry(id) {
+  const entryToEdit = entries.find((entry) => entry.id === id);
+
+  if (!entryToEdit) return;
+
+  document.getElementById("workDate").value = entryToEdit.date;
+  document.getElementById("deviceType").value = entryToEdit.deviceType;
+  document.getElementById("estimatedTime").value = entryToEdit.estimatedTime;
+  document.getElementById("actualTime").value = entryToEdit.actualTime;
+  document.getElementById("errors").value = entryToEdit.errors;
+  document.getElementById("downtime").value = entryToEdit.downtime;
+  document.getElementById("notes").value = entryToEdit.notes;
+
+  editingId = id;
+  document.querySelector(".primary-btn").textContent = "Update Entry";
+}
+
+function deleteEntry(id) {
+  entries = entries.filter((entry) => entry.id !== id);
+
+  saveEntries();
+  renderEntries();
+  renderChart();
+  updateStats();
+}
+
+entryForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const entryData = {
+    id: editingId || Date.now(),
+    date: document.getElementById("workDate").value,
+    deviceType: document.getElementById("deviceType").value.trim(),
+    estimatedTime: Number(document.getElementById("estimatedTime").value),
+    actualTime: Number(document.getElementById("actualTime").value),
+    errors: Number(document.getElementById("errors").value),
+    downtime: Number(document.getElementById("downtime").value),
+    notes: document.getElementById("notes").value.trim()
+  };
+
+  if (editingId) {
+    entries = entries.map((entry) =>
+      entry.id === editingId ? entryData : entry
+    );
+
+    editingId = null;
+    document.querySelector(".primary-btn").textContent = "Save Entry";
+  } else {
+    entries.unshift(entryData);
+  }
+
+  saveEntries();
+  renderEntries();
+  renderChart();
+  updateStats();
+
+  entryForm.reset();
+  document.getElementById("workDate").valueAsDate = new Date();
+});
+
+entryList.addEventListener("click", (event) => {
+  if (event.target.classList.contains("delete-btn")) {
+    const id = Number(event.target.dataset.id);
+    deleteEntry(id);
+  }
+
+  if (event.target.classList.contains("edit-btn")) {
+    const id = Number(event.target.dataset.id);
+    editEntry(id);
+  }
+});
+
+function refreshFilteredViews() {
+  renderEntries();
+  renderChart();
+}
+
+searchInput.addEventListener("input", refreshFilteredViews);
+filterDate.addEventListener("change", refreshFilteredViews);
+sortSelect.addEventListener("change", refreshFilteredViews);
+
+clearFiltersBtn.addEventListener("click", () => {
+  searchInput.value = "";
+  filterDate.value = "";
+  sortSelect.value = "newest";
+
+  refreshFilteredViews();
+});
+
+exportCsvBtn.addEventListener("click", exportToCsv);
+
+document.addEventListener("keydown", (event) => {
+  if (event.ctrlKey && event.key === "Enter") {
+    event.preventDefault();
+    entryForm.requestSubmit();
+  }
+
+  if (event.key === "Escape") {
+    editingId = null;
+    entryForm.reset();
+    document.getElementById("workDate").valueAsDate = new Date();
+    document.querySelector(".primary-btn").textContent = "Save Entry";
+  }
+
+  if (event.ctrlKey && event.key.toLowerCase() === "f") {
+    event.preventDefault();
+    searchInput.focus();
+  }
+
+  if (event.ctrlKey && event.key.toLowerCase() === "e") {
+    event.preventDefault();
+    exportToCsv();
+  }
+});
+
+document.getElementById("workDate").valueAsDate = new Date();
+
+renderEntries();
+renderChart();
+updateStats();

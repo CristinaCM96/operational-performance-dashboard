@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Operational Performance Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <main class="app">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Operations Analytics Platform</p>
+        <h1>Operational Performance Dashboard</h1>
+        <p class="subtitle">Track operational efficiency, downtime, errors, and task performance metrics in real time.</p>
+        <p class="shortcut-hint">Shortcuts: Ctrl + Enter save, Esc cancel, Ctrl + F search, Ctrl + E export</p>
+      </div>
+    </header>
+
+    <section class="stats-grid">
+      <article class="stat-card">
+        <span>Devices Logged</span>
+        <strong id="totalDevices">0</strong>
+      </article>
+
+      <article class="stat-card">
+        <span>Avg. Time / Device</span>
+        <strong id="avgTime">0 min</strong>
+      </article>
+
+      <article class="stat-card">
+        <span>Total Errors</span>
+        <strong id="totalErrors">0</strong>
+      </article>
+
+      <article class="stat-card">
+        <span>Efficiency Score</span>
+        <strong id="efficiencyScore">0%</strong>
+      </article>
+    </section>
+
+<section class="panel chart-panel">
+  <div class="section-header">
+    <h2>Efficiency Overview</h2>
+    <p>Compare task efficiency across logged devices.</p>
+  </div>
+
+  <div class="chart-wrapper">
+  <canvas id="efficiencyChart"></canvas>
+</div>
+
+    <section class="layout">
+      <section class="panel">
+        <div class="section-header">
+          <h2>Add Work Entry</h2>
+          <p>Log one device/task at a time.</p>
+        </div>
+
+        <form id="entryForm" class="entry-form">
+          <div class="form-row">
+            <label for="workDate">Date</label>
+            <input type="date" id="workDate" required />
+          </div>
+
+          <div class="form-row">
+            <label for="deviceType">Device / Task Type</label>
+            <input type="text" id="deviceType" placeholder="Laptop, phone, tablet..." required />
+          </div>
+
+          <div class="form-row">
+            <label for="estimatedTime">Estimated Time</label>
+            <input type="number" id="estimatedTime" min="0" placeholder="Minutes" required />
+          </div>
+
+          <div class="form-row">
+            <label for="actualTime">Actual Time</label>
+            <input type="number" id="actualTime" min="0" placeholder="Minutes" required />
+          </div>
+
+          <div class="form-row">
+            <label for="errors">Errors</label>
+            <input type="number" id="errors" min="0" placeholder="0" required />
+          </div>
+
+          <div class="form-row">
+            <label for="downtime">Downtime</label>
+            <input type="number" id="downtime" min="0" placeholder="Minutes" required />
+          </div>
+
+          <div class="form-row full">
+            <label for="notes">Notes</label>
+            <textarea id="notes" rows="4" placeholder="Optional notes about the day, blockers, system issues..."></textarea>
+          </div>
+
+          <button type="submit" class="primary-btn">Save Entry</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="section-header">
+  <h2>Entry History</h2>
+  <p>Review logged work metrics.</p>
+  <button id="exportCsvBtn" class="secondary-btn">Export CSV</button>
+</div>
+<div class="filters">
+  <input
+    type="text"
+    id="searchInput"
+    placeholder="Search device type..."
+  />
+
+  <input
+    type="date"
+    id="filterDate"
+  />
+<select id="sortSelect">
+  <option value="newest">Newest first</option>
+  <option value="oldest">Oldest first</option>
+  <option value="best">Best efficiency</option>
+  <option value="worst">Worst efficiency</option>
+  <option value="errors">Most errors</option>
+</select>
+
+  <button id="clearFiltersBtn" class="secondary-btn">
+    Clear
+  </button>
+</div>
+        <div id="entryList" class="entry-list">
+          <p class="empty-state">No entries yet. Add your first work entry.</p>
+        </div>
+      </section>
+    </section>
+  </main>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
