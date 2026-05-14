@@ -486,7 +486,13 @@ select:focus {
 .overview-stats strong {
   color: var(--text);
 }
+.analytics-grid {
+  margin-bottom: 24px;
+}
 
+.analytics-grid .panel {
+  margin-bottom: 24px;
+}
 @media (max-width: 650px) {
   .overview-grid {
     grid-template-columns: 1fr;
