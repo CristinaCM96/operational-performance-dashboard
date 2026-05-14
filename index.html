@@ -4,35 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Operational Performance Dashboard</title>
-
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
   <main class="app">
-
     <header class="app-header">
       <div>
         <p class="eyebrow">Operations Analytics Platform</p>
-
         <h1>Operational Performance Dashboard</h1>
-
         <p class="subtitle">
-          Track operational efficiency, downtime, errors,
-          and task performance metrics in real time.
+          Track operational efficiency, downtime, errors, and task performance metrics in real time.
         </p>
-
         <p class="shortcut-hint">
-          Shortcuts: Ctrl + Enter save, Esc cancel,
-          Ctrl + F search, Ctrl + E export
+          Shortcuts: Ctrl + Enter save, Esc cancel, Ctrl + F search, Ctrl + E export
         </p>
       </div>
     </header>
 
-    <!-- MAIN STATS -->
-
     <section class="stats-grid">
-
       <article class="stat-card">
         <span>Devices Logged</span>
         <strong id="totalDevices">0</strong>
@@ -49,53 +39,40 @@
       </article>
 
       <article class="stat-card">
-        <span>Efficiency Score</span>
-        <strong id="efficiencyScore">0%</strong>
-      </article>
-      
-      <article class="stat-card">
         <span>Error Rate</span>
         <strong id="errorRate">0%</strong>
-      </article>
-
-      <article class="stat-card">
-        <span>90% Success Target</span>
-        <strong id="successTarget">0</strong>
       </article>
 
       <article class="stat-card">
         <span>Success Rate</span>
         <strong id="successRate">0%</strong>
       </article>
+
+      <article class="stat-card">
+        <span>90% Success Target</span>
+        <strong id="successTarget">On target</strong>
+      </article>
+
+      <article class="stat-card">
+        <span>Efficiency Score</span>
+        <strong id="efficiencyScore">0%</strong>
+      </article>
+
+      <article class="stat-card">
+        <span>Total Parts Requested</span>
+        <strong id="totalParts">0</strong>
+      </article>
     </section>
 
-    <!-- WEEKLY / MONTHLY OVERVIEW -->
-
     <section class="overview-grid">
-
       <article class="overview-card">
         <h2>Weekly Overview</h2>
 
         <div class="overview-stats">
-          <p>
-            <span>Tasks</span>
-            <strong id="weeklyTasks">0</strong>
-          </p>
-
-          <p>
-            <span>Avg. Efficiency</span>
-            <strong id="weeklyEfficiency">0%</strong>
-          </p>
-
-          <p>
-            <span>Working Time</span>
-            <strong id="weeklyWorkingTime">0 min</strong>
-          </p>
-
-          <p>
-            <span>Errors</span>
-            <strong id="weeklyErrors">0</strong>
-          </p>
+          <p><span>Tasks</span><strong id="weeklyTasks">0</strong></p>
+          <p><span>Avg. Efficiency</span><strong id="weeklyEfficiency">0%</strong></p>
+          <p><span>Working Time</span><strong id="weeklyWorkingTime">0 min</strong></p>
+          <p><span>Errors</span><strong id="weeklyErrors">0</strong></p>
         </div>
       </article>
 
@@ -103,289 +80,135 @@
         <h2>Monthly Overview</h2>
 
         <div class="overview-stats">
-          <p>
-            <span>Tasks</span>
-            <strong id="monthlyTasks">0</strong>
-          </p>
-
-          <p>
-            <span>Avg. Efficiency</span>
-            <strong id="monthlyEfficiency">0%</strong>
-          </p>
-
-          <p>
-            <span>Working Time</span>
-            <strong id="monthlyWorkingTime">0 min</strong>
-          </p>
-
-          <p>
-            <span>Errors</span>
-            <strong id="monthlyErrors">0</strong>
-          </p>
+          <p><span>Tasks</span><strong id="monthlyTasks">0</strong></p>
+          <p><span>Avg. Efficiency</span><strong id="monthlyEfficiency">0%</strong></p>
+          <p><span>Working Time</span><strong id="monthlyWorkingTime">0 min</strong></p>
+          <p><span>Errors</span><strong id="monthlyErrors">0</strong></p>
         </div>
       </article>
-
     </section>
 
-    <!-- CHART -->
-
     <section class="panel chart-panel">
-
       <div class="section-header">
         <h2>Efficiency Overview</h2>
-
-        <p>
-          Compare task efficiency across logged devices.
-        </p>
+        <p>Compare task efficiency across logged devices.</p>
       </div>
 
       <div class="chart-wrapper">
         <canvas id="efficiencyChart"></canvas>
       </div>
-
     </section>
-<section class="analytics-grid">
-  <article class="panel">
-    <div class="section-header">
-      <h2>Devices vs Errors</h2>
 
-      <p>
-        Compare completed devices against logged operational errors.
-      </p>
-    </div>
-
-    <div class="mini-chart-wrapper">
-      <canvas id="devicesErrorsChart"></canvas>
-    </div>
-  </article>
-</section>
-    <!-- MAIN LAYOUT -->
-
-    <section class="layout">
-
-      <!-- FORM PANEL -->
-
-      <section class="panel">
-
+    <section class="analytics-grid">
+      <article class="panel">
         <div class="section-header">
-          <h2>Add Work Entry</h2>
-
-          <p>
-            Log one device/task at a time.
-          </p>
+          <h2>Devices vs Errors</h2>
+          <p>Compare completed devices against logged operational errors.</p>
         </div>
 
-        <!-- TIMER -->
+        <div class="mini-chart-wrapper">
+          <canvas id="devicesErrorsChart"></canvas>
+        </div>
+      </article>
+    </section>
+
+    <section class="layout">
+      <section class="panel">
+        <div class="section-header">
+          <h2>Add Work Entry</h2>
+          <p>Log one device/task at a time.</p>
+        </div>
 
         <div class="timer-panel">
-
           <div>
             <p class="timer-label">Task Timer</p>
-
             <strong id="timerDisplay">00:00:00</strong>
           </div>
 
           <div class="timer-actions">
-            <button type="button" id="startTimerBtn">
-              Start
-            </button>
-
-            <button type="button" id="pauseTimerBtn">
-              Pause
-            </button>
-
-            <button type="button" id="resetTimerBtn">
-              Reset
-            </button>
-
-            <button type="button" id="useTimerBtn">
-              Use Time
-            </button>
+            <button type="button" id="startTimerBtn">Start</button>
+            <button type="button" id="pauseTimerBtn">Pause</button>
+            <button type="button" id="resetTimerBtn">Reset</button>
+            <button type="button" id="useTimerBtn">Use Time</button>
           </div>
-
         </div>
 
-        <!-- FORM -->
-
         <form id="entryForm" class="entry-form">
-
           <div class="form-row">
             <label for="workDate">Date</label>
-
-            <input
-              type="date"
-              id="workDate"
-              required
-            />
+            <input type="date" id="workDate" required />
           </div>
 
           <div class="form-row">
-            <label for="deviceType">
-              Device / Task Type
-            </label>
-
-            <input
-              type="text"
-              id="deviceType"
-              placeholder="Laptop, phone, tablet..."
-              required
-            />
+            <label for="deviceType">Device / Task Type</label>
+            <input type="text" id="deviceType" placeholder="Laptop, phone, tablet..." required />
           </div>
 
           <div class="form-row">
-            <label for="estimatedTime">
-              Estimated Time
-            </label>
-
-            <input
-              type="number"
-              id="estimatedTime"
-              min="0"
-              placeholder="Minutes"
-              required
-            />
+            <label for="estimatedTime">Estimated Time</label>
+            <input type="number" id="estimatedTime" min="0" placeholder="Minutes" required />
           </div>
 
           <div class="form-row">
-            <label for="actualTime">
-              Actual Time
-            </label>
-
-            <input
-              type="number"
-              id="actualTime"
-              min="0"
-              placeholder="Minutes"
-              required
-            />
+            <label for="actualTime">Actual Time</label>
+            <input type="number" id="actualTime" min="0" placeholder="Minutes" required />
           </div>
 
           <div class="form-row">
             <label for="errors">Errors</label>
+            <input type="number" id="errors" min="0" placeholder="0" required />
+          </div>
 
-            <input
-              type="number"
-              id="errors"
-              min="0"
-              placeholder="0"
-              required
-            />
+          <div class="form-row">
+            <label for="partsRequested">Parts Requested</label>
+            <input type="number" id="partsRequested" min="0" placeholder="0" required />
           </div>
 
           <div class="form-row">
             <label for="downtime">Downtime</label>
-
-            <input
-              type="number"
-              id="downtime"
-              min="0"
-              placeholder="Minutes"
-              required
-            />
+            <input type="number" id="downtime" min="0" placeholder="Minutes" required />
           </div>
 
           <div class="form-row full">
             <label for="notes">Notes</label>
-
-            <textarea
-              id="notes"
-              rows="4"
-              placeholder="Optional notes about the day, blockers, system issues..."
-            ></textarea>
+            <textarea id="notes" rows="4" placeholder="Optional notes about the day, blockers, system issues..."></textarea>
           </div>
 
-          <button
-            type="submit"
-            class="primary-btn"
-          >
-            Save Entry
-          </button>
-
+          <button type="submit" class="primary-btn">Save Entry</button>
         </form>
-
       </section>
-
-      <!-- ENTRY HISTORY -->
 
       <section class="panel">
-
         <div class="section-header">
           <h2>Entry History</h2>
-
-          <p>
-            Review logged work metrics.
-          </p>
-
-          <button
-            id="exportCsvBtn"
-            class="secondary-btn"
-          >
-            Export CSV
-          </button>
+          <p>Review logged work metrics.</p>
+          <button id="exportCsvBtn" class="secondary-btn">Export CSV</button>
         </div>
-
-        <!-- FILTERS -->
 
         <div class="filters">
+          <input type="text" id="searchInput" placeholder="Search device type..." />
 
-          <input
-            type="text"
-            id="searchInput"
-            placeholder="Search device type..."
-          />
-
-          <input
-            type="date"
-            id="filterDate"
-          />
+          <input type="date" id="filterDate" />
 
           <select id="sortSelect">
-            <option value="newest">
-              Newest first
-            </option>
-
-            <option value="oldest">
-              Oldest first
-            </option>
-
-            <option value="best">
-              Best efficiency
-            </option>
-
-            <option value="worst">
-              Worst efficiency
-            </option>
-
-            <option value="errors">
-              Most errors
-            </option>
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="best">Best efficiency</option>
+            <option value="worst">Worst efficiency</option>
+            <option value="errors">Most errors</option>
           </select>
 
-          <button
-            id="clearFiltersBtn"
-            class="secondary-btn"
-          >
-            Clear
-          </button>
-
+          <button id="clearFiltersBtn" class="secondary-btn">Clear</button>
         </div>
-
-        <!-- ENTRY LIST -->
 
         <div id="entryList" class="entry-list">
-          <p class="empty-state">
-            No entries yet. Add your first work entry.
-          </p>
+          <p class="empty-state">No entries yet. Add your first work entry.</p>
         </div>
-
       </section>
-
     </section>
-
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="script.js"></script>
-
 </body>
 </html>

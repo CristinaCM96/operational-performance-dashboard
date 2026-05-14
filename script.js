@@ -5,10 +5,11 @@ const exportCsvBtn = document.getElementById("exportCsvBtn");
 const totalDevicesEl = document.getElementById("totalDevices");
 const avgTimeEl = document.getElementById("avgTime");
 const totalErrorsEl = document.getElementById("totalErrors");
-const efficiencyScoreEl = document.getElementById("efficiencyScore");
 const errorRateEl = document.getElementById("errorRate");
-const successTargetEl = document.getElementById("successTarget");
 const successRateEl = document.getElementById("successRate");
+const successTargetEl = document.getElementById("successTarget");
+const efficiencyScoreEl = document.getElementById("efficiencyScore");
+const totalPartsEl = document.getElementById("totalParts");
 
 const searchInput = document.getElementById("searchInput");
 const filterDate = document.getElementById("filterDate");
@@ -168,16 +169,48 @@ function updateStats() {
 
   const totalErrors = entries.reduce((sum, entry) => sum + entry.errors, 0);
 
+  const totalParts = entries.reduce(
+    (sum, entry) => sum + (entry.partsRequested || 0),
+    0
+  );
+
   const efficiency =
     totalWorkingTime > 0
       ? Math.round((totalEstimatedTime / totalWorkingTime) * 100)
       : 0;
+
+  const errorRate =
+    totalDevices > 0
+      ? Math.round((totalErrors / totalDevices) * 100)
+      : 0;
+
+  const successfulDevices = Math.max(totalDevices - totalErrors, 0);
+
+  const successRate =
+    totalDevices > 0
+      ? Math.round((successfulDevices / totalDevices) * 100)
+      : 0;
+
+  let neededFor90 = 0;
+
+  while (
+    totalDevices + neededFor90 > 0 &&
+    ((successfulDevices + neededFor90) / (totalDevices + neededFor90)) * 100 < 90
+  ) {
+    neededFor90++;
+  }
 
   totalDevicesEl.textContent = totalDevices;
   avgTimeEl.textContent =
     totalDevices > 0 ? `${Math.round(totalWorkingTime / totalDevices)} min` : "0 min";
   totalErrorsEl.textContent = totalErrors;
   efficiencyScoreEl.textContent = `${efficiency}%`;
+  errorRateEl.textContent = `${errorRate}%`;
+  successRateEl.textContent = `${successRate}%`;
+  totalPartsEl.textContent = totalParts;
+
+  successTargetEl.textContent =
+    successRate >= 90 ? "On target" : `${neededFor90} clean`;
 
   if (efficiency >= 120) {
     efficiencyScoreEl.style.color = "#4ade80";
@@ -186,47 +219,22 @@ function updateStats() {
   } else {
     efficiencyScoreEl.style.color = "#f87171";
   }
-const errorRate =
-  totalDevices > 0
-    ? Math.round((totalErrors / totalDevices) * 100)
-    : 0;
 
-errorRateEl.textContent = `${errorRate}%`;
-const successfulDevices = totalDevices - totalErrors;
-const successRate =
-  totalDevices > 0
-    ? Math.round((successfulDevices / totalDevices) * 100)
-    : 0;
+  if (successRate >= 95) {
+    successRateEl.style.color = "#4ade80";
+  } else if (successRate >= 90) {
+    successRateEl.style.color = "#facc15";
+  } else {
+    successRateEl.style.color = "#f87171";
+  }
 
-let neededFor90 = 0;
-
-while (
-  totalDevices + neededFor90 > 0 &&
-  ((successfulDevices + neededFor90) / (totalDevices + neededFor90)) * 100 < 90
-) {
-  neededFor90++;
-}
-
-successTargetEl.textContent =
-  successRate >= 90
-    ? "On target"
-    : `${neededFor90} clean`;
-
-const successfulDevices = Math.max(totalDevices - totalErrors, 0);
-
-const successRate =
-  totalDevices > 0
-    ? Math.round((successfulDevices / totalDevices) * 100)
-    : 0;
-successRateEl.textContent = `${successRate}%`;
-
-if (successRate >= 95) {
-  successRateEl.style.color = "#4ade80";
-} else if (successRate >= 90) {
-  successRateEl.style.color = "#facc15";
-} else {
-  successRateEl.style.color = "#f87171";
-}
+  if (errorRate <= 5) {
+    errorRateEl.style.color = "#4ade80";
+  } else if (errorRate <= 10) {
+    errorRateEl.style.color = "#facc15";
+  } else {
+    errorRateEl.style.color = "#f87171";
+  }
 }
 
 function renderChart() {
@@ -353,7 +361,7 @@ function renderDevicesErrorsChart() {
   devicesErrorsChartInstance = new Chart(canvas, {
     type: "bar",
     data: {
-      labels: labels,
+      labels,
       datasets: [
         {
           label: "Devices Completed",
@@ -452,6 +460,7 @@ function renderEntries() {
         <p><strong>${entry.actualTime}</strong> min actual</p>
         <p><strong>${entryWorkingTime}</strong> min working time</p>
         <p><strong>${entry.errors}</strong> errors</p>
+        <p><strong>${entry.partsRequested || 0}</strong> parts requested</p>
         <p><strong>${entry.downtime}</strong> min downtime</p>
       </div>
 
@@ -476,6 +485,7 @@ function exportToCsv() {
     "Downtime",
     "Working Time",
     "Errors",
+    "Parts Requested",
     "Efficiency",
     "Notes"
   ];
@@ -488,6 +498,7 @@ function exportToCsv() {
     entry.downtime,
     getWorkingTime(entry),
     entry.errors,
+    entry.partsRequested || 0,
     `${getEfficiency(entry)}%`,
     entry.notes
   ]);
@@ -524,6 +535,7 @@ function editEntry(id) {
   document.getElementById("estimatedTime").value = entryToEdit.estimatedTime;
   document.getElementById("actualTime").value = entryToEdit.actualTime;
   document.getElementById("errors").value = entryToEdit.errors;
+  document.getElementById("partsRequested").value = entryToEdit.partsRequested || 0;
   document.getElementById("downtime").value = entryToEdit.downtime;
   document.getElementById("notes").value = entryToEdit.notes;
 
@@ -552,6 +564,7 @@ entryForm.addEventListener("submit", (event) => {
     estimatedTime: Number(document.getElementById("estimatedTime").value),
     actualTime: Number(document.getElementById("actualTime").value),
     errors: Number(document.getElementById("errors").value),
+    partsRequested: Number(document.getElementById("partsRequested").value),
     downtime: Number(document.getElementById("downtime").value),
     notes: document.getElementById("notes").value.trim()
   };
