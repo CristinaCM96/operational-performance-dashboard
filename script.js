@@ -11,6 +11,7 @@ const searchInput = document.getElementById("searchInput");
 const filterDate = document.getElementById("filterDate");
 const clearFiltersBtn = document.getElementById("clearFiltersBtn");
 const sortSelect = document.getElementById("sortSelect");
+
 const timerDisplay = document.getElementById("timerDisplay");
 const startTimerBtn = document.getElementById("startTimerBtn");
 const pauseTimerBtn = document.getElementById("pauseTimerBtn");
@@ -27,12 +28,14 @@ const monthlyEfficiencyEl = document.getElementById("monthlyEfficiency");
 const monthlyWorkingTimeEl = document.getElementById("monthlyWorkingTime");
 const monthlyErrorsEl = document.getElementById("monthlyErrors");
 
+let entries = JSON.parse(localStorage.getItem("opsTrackerEntries")) || [];
+let editingId = null;
+
 let timerSeconds = 0;
 let timerInterval = null;
 
-let entries = JSON.parse(localStorage.getItem("opsTrackerEntries")) || [];
-let editingId = null;
 let efficiencyChartInstance = null;
+let devicesErrorsChartInstance = null;
 
 function saveEntries() {
   localStorage.setItem("opsTrackerEntries", JSON.stringify(entries));
@@ -73,6 +76,7 @@ function getEfficiencyClass(efficiency) {
   if (efficiency >= 90) return "efficiency-orange";
   return "efficiency-red";
 }
+
 function isThisWeek(dateString) {
   const entryDate = new Date(dateString);
   const today = new Date();
@@ -145,6 +149,7 @@ function updateOverview() {
   monthlyWorkingTimeEl.textContent = `${monthly.workingTime} min`;
   monthlyErrorsEl.textContent = monthly.errors;
 }
+
 function updateStats() {
   const totalDevices = entries.length;
 
@@ -193,18 +198,13 @@ function renderChart() {
       <div class="chart-empty-state">
         <div class="chart-empty-icon">📊</div>
         <h3>No performance data yet</h3>
-        <p>
-          Add your first operational task entry to generate analytics and efficiency insights.
-        </p>
+        <p>Add your first operational task entry to generate analytics and efficiency insights.</p>
       </div>
     `;
-
     return;
   }
 
-  chartWrapper.innerHTML = `
-    <canvas id="efficiencyChart"></canvas>
-  `;
+  chartWrapper.innerHTML = `<canvas id="efficiencyChart"></canvas>`;
 
   const canvas = document.getElementById("efficiencyChart");
   const displayEntries = getFilteredAndSortedEntries();
@@ -214,12 +214,9 @@ function renderChart() {
       <div class="chart-empty-state">
         <div class="chart-empty-icon">🔎</div>
         <h3>No matching chart data</h3>
-        <p>
-          Try adjusting your search, date filter, or sorting options.
-        </p>
+        <p>Try adjusting your search, date filter, or sorting options.</p>
       </div>
     `;
-
     return;
   }
 
@@ -238,11 +235,11 @@ function renderChart() {
   efficiencyChartInstance = new Chart(canvas, {
     type: "bar",
     data: {
-      labels: labels,
+      labels,
       datasets: [
         {
           label: "Efficiency %",
-          data: data,
+          data,
           backgroundColor: colors,
           borderRadius: 8
         }
@@ -278,7 +275,6 @@ function renderChart() {
     }
   });
 }
-let devicesErrorsChartInstance = null;
 
 function renderDevicesErrorsChart() {
   const canvas = document.getElementById("devicesErrorsChart");
@@ -287,9 +283,12 @@ function renderDevicesErrorsChart() {
 
   if (devicesErrorsChartInstance) {
     devicesErrorsChartInstance.destroy();
+    devicesErrorsChartInstance = null;
   }
 
-  const chartData = entries.map((entry) => ({
+  const displayEntries = getFilteredAndSortedEntries();
+
+  const chartData = displayEntries.map((entry) => ({
     x: 1,
     y: entry.errors,
     label: entry.deviceType
@@ -297,7 +296,6 @@ function renderDevicesErrorsChart() {
 
   devicesErrorsChartInstance = new Chart(canvas, {
     type: "scatter",
-
     data: {
       datasets: [
         {
@@ -308,27 +306,22 @@ function renderDevicesErrorsChart() {
         }
       ]
     },
-
     options: {
       responsive: true,
       maintainAspectRatio: false,
-
       plugins: {
         tooltip: {
           callbacks: {
             label(context) {
               const point = context.raw;
-
               return `${point.label}: ${point.y} errors`;
             }
           }
         },
-
         legend: {
           display: false
         }
       },
-
       scales: {
         x: {
           title: {
@@ -336,29 +329,25 @@ function renderDevicesErrorsChart() {
             text: "Devices Completed",
             color: "#9ca3af"
           },
-
           ticks: {
-            color: "#9ca3af"
+            color: "#9ca3af",
+            stepSize: 1
           },
-
           grid: {
             color: "#374151"
           }
         },
-
         y: {
           beginAtZero: true,
-
           title: {
             display: true,
             text: "Errors",
             color: "#9ca3af"
           },
-
           ticks: {
-            color: "#9ca3af"
+            color: "#9ca3af",
+            stepSize: 1
           },
-
           grid: {
             color: "#374151"
           }
@@ -367,6 +356,7 @@ function renderDevicesErrorsChart() {
     }
   });
 }
+
 function renderEntries() {
   entryList.innerHTML = "";
 
@@ -540,7 +530,9 @@ entryForm.addEventListener("submit", (event) => {
 
   entryForm.reset();
   document.getElementById("workDate").valueAsDate = new Date();
+  resetTimer();
 });
+
 function formatTimer(seconds) {
   const hrs = Math.floor(seconds / 3600);
   const mins = Math.floor((seconds % 3600) / 60);
@@ -577,6 +569,7 @@ function useTimerTime() {
   const roundedMinutes = Math.max(Math.round(timerSeconds / 60), 1);
   document.getElementById("actualTime").value = roundedMinutes;
 }
+
 entryList.addEventListener("click", (event) => {
   if (event.target.classList.contains("delete-btn")) {
     const id = Number(event.target.dataset.id);
@@ -618,8 +611,8 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     editingId = null;
     entryForm.reset();
-document.getElementById("workDate").valueAsDate = new Date();
-resetTimer();
+    document.getElementById("workDate").valueAsDate = new Date();
+    resetTimer();
     document.querySelector(".primary-btn").textContent = "Save Entry";
   }
 
@@ -633,12 +626,14 @@ resetTimer();
     exportToCsv();
   }
 });
+
 if (startTimerBtn && pauseTimerBtn && resetTimerBtn && useTimerBtn) {
   startTimerBtn.addEventListener("click", startTimer);
   pauseTimerBtn.addEventListener("click", pauseTimer);
   resetTimerBtn.addEventListener("click", resetTimer);
   useTimerBtn.addEventListener("click", useTimerTime);
 }
+
 document.getElementById("workDate").valueAsDate = new Date();
 
 renderEntries();
