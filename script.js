@@ -459,10 +459,12 @@ resetTimer();
     exportToCsv();
   }
 });
-startTimerBtn.addEventListener("click", startTimer);
-pauseTimerBtn.addEventListener("click", pauseTimer);
-resetTimerBtn.addEventListener("click", resetTimer);
-useTimerBtn.addEventListener("click", useTimerTime);
+if (startTimerBtn && pauseTimerBtn && resetTimerBtn && useTimerBtn) {
+  startTimerBtn.addEventListener("click", startTimer);
+  pauseTimerBtn.addEventListener("click", pauseTimer);
+  resetTimerBtn.addEventListener("click", resetTimer);
+  useTimerBtn.addEventListener("click", useTimerTime);
+}
 document.getElementById("workDate").valueAsDate = new Date();
 
 renderEntries();
