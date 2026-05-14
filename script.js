@@ -1,6 +1,9 @@
 const entryForm = document.getElementById("entryForm");
 const entryList = document.getElementById("entryList");
+
 const exportCsvBtn = document.getElementById("exportCsvBtn");
+const exportJsonBtn = document.getElementById("exportJsonBtn");
+const importJsonInput = document.getElementById("importJsonInput");
 
 const totalDevicesEl = document.getElementById("totalDevices");
 const avgTimeEl = document.getElementById("avgTime");
@@ -15,8 +18,6 @@ const searchInput = document.getElementById("searchInput");
 const filterDate = document.getElementById("filterDate");
 const clearFiltersBtn = document.getElementById("clearFiltersBtn");
 const sortSelect = document.getElementById("sortSelect");
-const exportJsonBtn = document.getElementById("exportJsonBtn");
-const importJsonInput = document.getElementById("importJsonInput");
 
 const timerDisplay = document.getElementById("timerDisplay");
 const startTimerBtn = document.getElementById("startTimerBtn");
@@ -181,10 +182,10 @@ function updateStats() {
       ? Math.round((totalEstimatedTime / totalWorkingTime) * 100)
       : 0;
 
-  const errorRate =
+  const errorsPerDevice =
     totalDevices > 0
-      ? Math.round((totalErrors / totalDevices) * 100)
-      : 0;
+      ? (totalErrors / totalDevices).toFixed(2)
+      : "0.00";
 
   const successfulDevices = Math.max(totalDevices - totalErrors, 0);
 
@@ -207,12 +208,11 @@ function updateStats() {
     totalDevices > 0 ? `${Math.round(totalWorkingTime / totalDevices)} min` : "0 min";
   totalErrorsEl.textContent = totalErrors;
   efficiencyScoreEl.textContent = `${efficiency}%`;
-  errorRateEl.textContent = `${errorRate}%`;
+  errorRateEl.textContent = errorsPerDevice;
   successRateEl.textContent = `${successRate}%`;
-  totalPartsEl.textContent = totalParts;
-
   successTargetEl.textContent =
     successRate >= 90 ? "On target" : `${neededFor90} clean`;
+  totalPartsEl.textContent = totalParts;
 
   if (efficiency >= 120) {
     efficiencyScoreEl.style.color = "#4ade80";
@@ -222,20 +222,22 @@ function updateStats() {
     efficiencyScoreEl.style.color = "#f87171";
   }
 
+  const errorsPerDeviceNumber = Number(errorsPerDevice);
+
+  if (errorsPerDeviceNumber <= 0.05) {
+    errorRateEl.style.color = "#4ade80";
+  } else if (errorsPerDeviceNumber <= 0.1) {
+    errorRateEl.style.color = "#facc15";
+  } else {
+    errorRateEl.style.color = "#f87171";
+  }
+
   if (successRate >= 95) {
     successRateEl.style.color = "#4ade80";
   } else if (successRate >= 90) {
     successRateEl.style.color = "#facc15";
   } else {
     successRateEl.style.color = "#f87171";
-  }
-
-  if (errorRate <= 5) {
-    errorRateEl.style.color = "#4ade80";
-  } else if (errorRate <= 10) {
-    errorRateEl.style.color = "#facc15";
-  } else {
-    errorRateEl.style.color = "#f87171";
   }
 }
 
@@ -522,10 +524,13 @@ function exportToCsv() {
 
   link.href = url;
   link.download = "operational-performance-dashboard-export.csv";
+  document.body.appendChild(link);
   link.click();
+  document.body.removeChild(link);
 
   URL.revokeObjectURL(url);
 }
+
 function exportToJson() {
   if (entries.length === 0) {
     alert("No entries to back up yet.");
@@ -534,6 +539,7 @@ function exportToJson() {
 
   const backup = {
     app: "Operational Performance Dashboard",
+    version: "1.0",
     exportedAt: new Date().toISOString(),
     entries: entries
   };
@@ -547,7 +553,9 @@ function exportToJson() {
 
   link.href = url;
   link.download = "operational-performance-dashboard-backup.json";
+  document.body.appendChild(link);
   link.click();
+  document.body.removeChild(link);
 
   URL.revokeObjectURL(url);
 }
@@ -581,10 +589,13 @@ function importFromJson(event) {
     } catch (error) {
       alert("Could not import backup file.");
     }
+
+    importJsonInput.value = "";
   };
 
   reader.readAsText(file);
 }
+
 function editEntry(id) {
   const entryToEdit = entries.find((entry) => entry.id === id);
 
@@ -720,8 +731,14 @@ clearFiltersBtn.addEventListener("click", () => {
 });
 
 exportCsvBtn.addEventListener("click", exportToCsv);
-exportJsonBtn.addEventListener("click", exportToJson);
-importJsonInput.addEventListener("change", importFromJson);
+
+if (exportJsonBtn) {
+  exportJsonBtn.addEventListener("click", exportToJson);
+}
+
+if (importJsonInput) {
+  importJsonInput.addEventListener("change", importFromJson);
+}
 
 document.addEventListener("keydown", (event) => {
   if (event.ctrlKey && event.key === "Enter") {

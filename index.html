@@ -39,8 +39,8 @@
       </article>
 
       <article class="stat-card">
-        <span>Error Rate</span>
-        <strong id="errorRate">0%</strong>
+        <span>Errors per Device</span>
+        <strong id="errorRate">0.00</strong>
       </article>
 
       <article class="stat-card">
@@ -182,6 +182,7 @@
         <div class="section-header">
           <h2>Entry History</h2>
           <p>Review logged work metrics.</p>
+
           <button id="exportCsvBtn" class="secondary-btn">Export CSV</button>
           <button id="exportJsonBtn" class="secondary-btn">Backup JSON</button>
 
@@ -189,7 +190,12 @@
             Import JSON
           </label>
 
-          <input type="file" id="importJsonInput" accept="application/json" hidden />
+          <input
+            type="file"
+            id="importJsonInput"
+            accept="application/json"
+            hidden
+          />
         </div>
 
         <div class="filters">
