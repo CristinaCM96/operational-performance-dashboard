@@ -60,16 +60,21 @@ function saveEntries() {
 
 function saveUndoState() {
   previousEntries = JSON.parse(JSON.stringify(entries));
+  localStorage.setItem("opsTrackerUndoEntries", JSON.stringify(previousEntries));
 }
 
 function undoLastChange() {
-  if (!previousEntries) {
+  const storedUndo = localStorage.getItem("opsTrackerUndoEntries");
+
+  if (!storedUndo) {
     alert("No change to undo.");
     return;
   }
 
-  entries = previousEntries;
+  entries = JSON.parse(storedUndo);
   previousEntries = null;
+
+  localStorage.removeItem("opsTrackerUndoEntries");
 
   refreshDashboard();
 }
@@ -763,7 +768,7 @@ entryForm.addEventListener("submit", (event) => {
   entryForm.reset();
   document.getElementById("workDate").valueAsDate = new Date();
   resetTimer();
-});
+}
 
 function createBatchRow() {
   batchRowCount++;
