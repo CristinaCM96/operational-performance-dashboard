@@ -35,17 +35,33 @@ const monthlyEfficiencyEl = document.getElementById("monthlyEfficiency");
 const monthlyWorkingTimeEl = document.getElementById("monthlyWorkingTime");
 const monthlyErrorsEl = document.getElementById("monthlyErrors");
 
+const batchDateInput = document.getElementById("batchDate");
+const batchRowsEl = document.getElementById("batchRows");
+const addBatchRowBtn = document.getElementById("addBatchRowBtn");
+const saveBatchBtn = document.getElementById("saveBatchBtn");
+
 let entries = JSON.parse(localStorage.getItem("opsTrackerEntries")) || [];
 let editingId = null;
 
 let timerSeconds = 0;
 let timerInterval = null;
 
+let batchRowCount = 0;
+
 let efficiencyChartInstance = null;
 let devicesErrorsChartInstance = null;
 
 function saveEntries() {
   localStorage.setItem("opsTrackerEntries", JSON.stringify(entries));
+}
+
+function refreshDashboard() {
+  saveEntries();
+  renderEntries();
+  renderChart();
+  renderDevicesErrorsChart();
+  updateStats();
+  updateOverview();
 }
 
 function getWorkingTime(entry) {
@@ -183,9 +199,7 @@ function updateStats() {
       : 0;
 
   const errorsPerDevice =
-    totalDevices > 0
-      ? (totalErrors / totalDevices).toFixed(2)
-      : "0.00";
+    totalDevices > 0 ? (totalErrors / totalDevices).toFixed(2) : "0.00";
 
   const successfulDevices = Math.max(totalDevices - totalErrors, 0);
 
@@ -539,7 +553,7 @@ function exportToJson() {
 
   const backup = {
     app: "Operational Performance Dashboard",
-    version: "1.0",
+    version: "1.1",
     exportedAt: new Date().toISOString(),
     entries: entries
   };
@@ -577,13 +591,7 @@ function importFromJson(event) {
       }
 
       entries = backup.entries;
-      saveEntries();
-
-      renderEntries();
-      renderChart();
-      renderDevicesErrorsChart();
-      updateStats();
-      updateOverview();
+      refreshDashboard();
 
       alert("Backup imported successfully.");
     } catch (error) {
@@ -616,13 +624,7 @@ function editEntry(id) {
 
 function deleteEntry(id) {
   entries = entries.filter((entry) => entry.id !== id);
-
-  saveEntries();
-  renderEntries();
-  renderChart();
-  renderDevicesErrorsChart();
-  updateStats();
-  updateOverview();
+  refreshDashboard();
 }
 
 entryForm.addEventListener("submit", (event) => {
@@ -651,17 +653,92 @@ entryForm.addEventListener("submit", (event) => {
     entries.unshift(entryData);
   }
 
-  saveEntries();
-  renderEntries();
-  renderChart();
-  renderDevicesErrorsChart();
-  updateStats();
-  updateOverview();
+  refreshDashboard();
 
   entryForm.reset();
   document.getElementById("workDate").valueAsDate = new Date();
   resetTimer();
 });
+
+function createBatchRow() {
+  batchRowCount++;
+
+  const row = document.createElement("article");
+  row.className = "batch-row";
+
+  row.innerHTML = `
+    <div class="batch-row-header">
+      <span class="batch-row-title">Device Row ${batchRowCount}</span>
+      <button type="button" class="remove-batch-row-btn">Remove</button>
+    </div>
+
+    <div class="batch-fields">
+      <input type="text" class="batch-device" placeholder="Device / task type" required />
+      <input type="number" class="batch-estimated" min="0" placeholder="Estimated min" required />
+      <input type="number" class="batch-actual" min="0" placeholder="Actual min" required />
+      <input type="number" class="batch-errors" min="0" placeholder="Errors" required />
+      <input type="number" class="batch-parts" min="0" placeholder="Parts requested" required />
+      <input type="number" class="batch-downtime" min="0" placeholder="Downtime min" required />
+      <textarea class="batch-notes" rows="2" placeholder="Optional notes"></textarea>
+    </div>
+  `;
+
+  batchRowsEl.appendChild(row);
+}
+
+function saveBatchEntries() {
+  const batchDate = batchDateInput.value;
+  const rows = [...document.querySelectorAll(".batch-row")];
+
+  if (!batchDate) {
+    alert("Please select a batch date.");
+    return;
+  }
+
+  if (rows.length === 0) {
+    alert("Please add at least one device row.");
+    return;
+  }
+
+  const newEntries = [];
+
+  for (const row of rows) {
+    const deviceType = row.querySelector(".batch-device").value.trim();
+    const estimatedTime = Number(row.querySelector(".batch-estimated").value);
+    const actualTime = Number(row.querySelector(".batch-actual").value);
+    const errors = Number(row.querySelector(".batch-errors").value);
+    const partsRequested = Number(row.querySelector(".batch-parts").value);
+    const downtime = Number(row.querySelector(".batch-downtime").value);
+    const notes = row.querySelector(".batch-notes").value.trim();
+
+    if (!deviceType) {
+      alert("Every batch row needs a device/task type.");
+      return;
+    }
+
+    newEntries.push({
+      id: Date.now() + Math.random(),
+      date: batchDate,
+      deviceType,
+      estimatedTime,
+      actualTime,
+      errors,
+      partsRequested,
+      downtime,
+      notes
+    });
+  }
+
+  entries = [...newEntries.reverse(), ...entries];
+
+  batchRowsEl.innerHTML = "";
+  batchRowCount = 0;
+  createBatchRow();
+
+  refreshDashboard();
+
+  alert("Batch day saved successfully.");
+}
 
 function formatTimer(seconds) {
   const hrs = Math.floor(seconds / 3600);
@@ -712,6 +789,12 @@ entryList.addEventListener("click", (event) => {
   }
 });
 
+batchRowsEl.addEventListener("click", (event) => {
+  if (event.target.classList.contains("remove-batch-row-btn")) {
+    event.target.closest(".batch-row").remove();
+  }
+});
+
 function refreshFilteredViews() {
   renderEntries();
   renderChart();
@@ -738,6 +821,11 @@ if (exportJsonBtn) {
 
 if (importJsonInput) {
   importJsonInput.addEventListener("change", importFromJson);
+}
+
+if (addBatchRowBtn && saveBatchBtn) {
+  addBatchRowBtn.addEventListener("click", createBatchRow);
+  saveBatchBtn.addEventListener("click", saveBatchEntries);
 }
 
 document.addEventListener("keydown", (event) => {
@@ -773,6 +861,8 @@ if (startTimerBtn && pauseTimerBtn && resetTimerBtn && useTimerBtn) {
 }
 
 document.getElementById("workDate").valueAsDate = new Date();
+batchDateInput.valueAsDate = new Date();
+createBatchRow();
 
 renderEntries();
 renderChart();

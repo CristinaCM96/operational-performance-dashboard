@@ -71,8 +71,6 @@ h1 {
   font-size: 0.85rem;
 }
 
-/* STATS */
-
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -103,16 +101,13 @@ h1 {
   font-size: 2rem;
 }
 
-/* GLOBAL SECTION SPACING */
-
 .overview-grid,
 .analytics-grid,
 .chart-panel,
-.layout {
+.layout,
+.batch-panel {
   margin-bottom: 32px;
 }
-
-/* OVERVIEW */
 
 .overview-grid {
   display: grid;
@@ -146,8 +141,6 @@ h1 {
   color: var(--text);
 }
 
-/* PANELS */
-
 .panel {
   padding: 24px;
 }
@@ -166,13 +159,8 @@ h1 {
   font-size: 0.95rem;
 }
 
-/* CHARTS */
-
-.chart-panel {
-  width: 100%;
-}
-
-.chart-wrapper {
+.chart-wrapper,
+.mini-chart-wrapper {
   position: relative;
   width: 100%;
   height: 360px;
@@ -183,13 +171,6 @@ h1 {
   display: grid;
   grid-template-columns: 1fr;
   gap: 32px;
-}
-
-.mini-chart-wrapper {
-  position: relative;
-  width: 100%;
-  height: 360px;
-  margin-top: 20px;
 }
 
 .chart-empty-state {
@@ -218,17 +199,12 @@ h1 {
   font-size: 3rem;
 }
 
-/* MAIN LAYOUT */
-
 .layout {
   display: grid;
   grid-template-columns: 1fr 1.1fr;
   gap: 24px;
   align-items: start;
-  margin-top: 0;
 }
-
-/* FORM */
 
 .entry-form {
   display: grid;
@@ -273,8 +249,6 @@ select:focus {
   border-color: var(--accent);
 }
 
-/* BUTTONS */
-
 .primary-btn {
   border: none;
   border-radius: 12px;
@@ -305,6 +279,11 @@ select:focus {
   color: var(--accent);
 }
 
+.import-label {
+  display: inline-block;
+  text-align: center;
+}
+
 .edit-btn {
   border: 1px solid rgba(56, 189, 248, 0.35);
   border-radius: 10px;
@@ -318,7 +297,8 @@ select:focus {
   background: rgba(56, 189, 248, 0.12);
 }
 
-.delete-btn {
+.delete-btn,
+.remove-batch-row-btn {
   border: 1px solid rgba(248, 113, 113, 0.35);
   border-radius: 10px;
   background: transparent;
@@ -327,16 +307,10 @@ select:focus {
   cursor: pointer;
 }
 
-.delete-btn:hover {
+.delete-btn:hover,
+.remove-batch-row-btn:hover {
   background: rgba(248, 113, 113, 0.12);
 }
-
-.import-label {
-  display: inline-block;
-  text-align: center;
-}
-
-/* TIMER */
 
 .timer-panel {
   display: grid;
@@ -381,16 +355,12 @@ select:focus {
   color: var(--accent);
 }
 
-/* FILTERS */
-
 .filters {
   display: grid;
   grid-template-columns: 1fr auto auto auto;
   gap: 12px;
   margin-bottom: 18px;
 }
-
-/* ENTRIES */
 
 .entry-list {
   display: grid;
@@ -454,8 +424,6 @@ select:focus {
   gap: 10px;
 }
 
-/* BADGES */
-
 .efficiency-badge {
   border-radius: 999px;
   padding: 6px 10px;
@@ -478,10 +446,68 @@ select:focus {
   color: #f87171;
 }
 
-/* RESPONSIVE */
+.batch-date-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: end;
+  margin-bottom: 20px;
+}
+
+.batch-rows {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.batch-row {
+  background: var(--panel-soft);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.batch-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.batch-row-title {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.batch-fields {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.batch-fields input,
+.batch-fields textarea {
+  font-size: 0.9rem;
+}
+
+.batch-notes {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 1050px) {
+  .batch-fields {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 
 @media (max-width: 900px) {
   .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .batch-date-row {
     grid-template-columns: 1fr;
   }
 }
@@ -491,9 +517,9 @@ select:focus {
     padding: 28px 14px;
   }
 
-  .stats-grid,
   .overview-grid,
-  .entry-details {
+  .entry-details,
+  .batch-fields {
     grid-template-columns: 1fr;
   }
 
