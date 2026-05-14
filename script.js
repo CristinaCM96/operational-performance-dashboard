@@ -6,6 +6,7 @@ const totalDevicesEl = document.getElementById("totalDevices");
 const avgTimeEl = document.getElementById("avgTime");
 const totalErrorsEl = document.getElementById("totalErrors");
 const efficiencyScoreEl = document.getElementById("efficiencyScore");
+const errorRateEl = document.getElementById("errorRate");
 
 const searchInput = document.getElementById("searchInput");
 const filterDate = document.getElementById("filterDate");
@@ -183,6 +184,12 @@ function updateStats() {
   } else {
     efficiencyScoreEl.style.color = "#f87171";
   }
+const errorRate =
+  totalDevices > 0
+    ? Math.round((totalErrors / totalDevices) * 100)
+    : 0;
+
+errorRateEl.textContent = `${errorRate}%`;
 }
 
 function renderChart() {
