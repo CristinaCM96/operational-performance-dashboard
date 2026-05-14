@@ -15,6 +15,8 @@ const searchInput = document.getElementById("searchInput");
 const filterDate = document.getElementById("filterDate");
 const clearFiltersBtn = document.getElementById("clearFiltersBtn");
 const sortSelect = document.getElementById("sortSelect");
+const exportJsonBtn = document.getElementById("exportJsonBtn");
+const importJsonInput = document.getElementById("importJsonInput");
 
 const timerDisplay = document.getElementById("timerDisplay");
 const startTimerBtn = document.getElementById("startTimerBtn");
@@ -524,7 +526,65 @@ function exportToCsv() {
 
   URL.revokeObjectURL(url);
 }
+function exportToJson() {
+  if (entries.length === 0) {
+    alert("No entries to back up yet.");
+    return;
+  }
 
+  const backup = {
+    app: "Operational Performance Dashboard",
+    exportedAt: new Date().toISOString(),
+    entries: entries
+  };
+
+  const blob = new Blob([JSON.stringify(backup, null, 2)], {
+    type: "application/json"
+  });
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = "operational-performance-dashboard-backup.json";
+  link.click();
+
+  URL.revokeObjectURL(url);
+}
+
+function importFromJson(event) {
+  const file = event.target.files[0];
+
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function () {
+    try {
+      const backup = JSON.parse(reader.result);
+
+      if (!backup.entries || !Array.isArray(backup.entries)) {
+        alert("Invalid backup file.");
+        return;
+      }
+
+      entries = backup.entries;
+      saveEntries();
+
+      renderEntries();
+      renderChart();
+      renderDevicesErrorsChart();
+      updateStats();
+      updateOverview();
+
+      alert("Backup imported successfully.");
+    } catch (error) {
+      alert("Could not import backup file.");
+    }
+  };
+
+  reader.readAsText(file);
+}
 function editEntry(id) {
   const entryToEdit = entries.find((entry) => entry.id === id);
 
@@ -660,6 +720,8 @@ clearFiltersBtn.addEventListener("click", () => {
 });
 
 exportCsvBtn.addEventListener("click", exportToCsv);
+exportJsonBtn.addEventListener("click", exportToJson);
+importJsonInput.addEventListener("change", importFromJson);
 
 document.addEventListener("keydown", (event) => {
   if (event.ctrlKey && event.key === "Enter") {

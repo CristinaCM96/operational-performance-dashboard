@@ -331,6 +331,11 @@ select:focus {
   background: rgba(248, 113, 113, 0.12);
 }
 
+.import-label {
+  display: inline-block;
+  text-align: center;
+}
+
 /* TIMER */
 
 .timer-panel {
