@@ -278,7 +278,95 @@ function renderChart() {
     }
   });
 }
+let devicesErrorsChartInstance = null;
 
+function renderDevicesErrorsChart() {
+  const canvas = document.getElementById("devicesErrorsChart");
+
+  if (!canvas) return;
+
+  if (devicesErrorsChartInstance) {
+    devicesErrorsChartInstance.destroy();
+  }
+
+  const chartData = entries.map((entry) => ({
+    x: 1,
+    y: entry.errors,
+    label: entry.deviceType
+  }));
+
+  devicesErrorsChartInstance = new Chart(canvas, {
+    type: "scatter",
+
+    data: {
+      datasets: [
+        {
+          label: "Devices vs Errors",
+          data: chartData,
+          backgroundColor: "#facc15",
+          pointRadius: 8
+        }
+      ]
+    },
+
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label(context) {
+              const point = context.raw;
+
+              return `${point.label}: ${point.y} errors`;
+            }
+          }
+        },
+
+        legend: {
+          display: false
+        }
+      },
+
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: "Devices Completed",
+            color: "#9ca3af"
+          },
+
+          ticks: {
+            color: "#9ca3af"
+          },
+
+          grid: {
+            color: "#374151"
+          }
+        },
+
+        y: {
+          beginAtZero: true,
+
+          title: {
+            display: true,
+            text: "Errors",
+            color: "#9ca3af"
+          },
+
+          ticks: {
+            color: "#9ca3af"
+          },
+
+          grid: {
+            color: "#374151"
+          }
+        }
+      }
+    }
+  });
+}
 function renderEntries() {
   entryList.innerHTML = "";
 
