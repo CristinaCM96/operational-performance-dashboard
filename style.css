@@ -75,7 +75,7 @@ h1 {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
   margin-bottom: 32px;
 }
@@ -474,12 +474,6 @@ select:focus {
 }
 
 /* RESPONSIVE */
-
-@media (max-width: 1050px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
 
 @media (max-width: 900px) {
   .layout {
