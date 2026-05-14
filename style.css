@@ -488,6 +488,7 @@ select:focus {
 }
 .analytics-grid {
   margin-bottom: 24px;
+  padding: 22px;
 }
 
 .analytics-grid .panel {
