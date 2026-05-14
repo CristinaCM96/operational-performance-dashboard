@@ -444,7 +444,8 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     editingId = null;
     entryForm.reset();
-    document.getElementById("workDate").valueAsDate = new Date();
+document.getElementById("workDate").valueAsDate = new Date();
+resetTimer();
     document.querySelector(".primary-btn").textContent = "Save Entry";
   }
 
