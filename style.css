@@ -451,6 +451,13 @@ select:focus {
   margin-bottom: 24px;
 }
 
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
 .overview-card {
   background: var(--panel);
   border: 1px solid var(--border);
