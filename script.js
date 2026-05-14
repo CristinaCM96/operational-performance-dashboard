@@ -2,9 +2,10 @@ const entryForm = document.getElementById("entryForm");
 const entryList = document.getElementById("entryList");
 
 const exportCsvBtn = document.getElementById("exportCsvBtn");
-const importCsvInput = document.getElementById("importCsvInput");
 const exportJsonBtn = document.getElementById("exportJsonBtn");
 const importJsonInput = document.getElementById("importJsonInput");
+const importCsvInput = document.getElementById("importCsvInput");
+const undoBtn = document.getElementById("undoBtn");
 
 const totalDevicesEl = document.getElementById("totalDevices");
 const avgTimeEl = document.getElementById("avgTime");
@@ -42,6 +43,7 @@ const addBatchRowBtn = document.getElementById("addBatchRowBtn");
 const saveBatchBtn = document.getElementById("saveBatchBtn");
 
 let entries = JSON.parse(localStorage.getItem("opsTrackerEntries")) || [];
+let previousEntries = null;
 let editingId = null;
 
 let timerSeconds = 0;
@@ -54,6 +56,22 @@ let devicesErrorsChartInstance = null;
 
 function saveEntries() {
   localStorage.setItem("opsTrackerEntries", JSON.stringify(entries));
+}
+
+function saveUndoState() {
+  previousEntries = JSON.parse(JSON.stringify(entries));
+}
+
+function undoLastChange() {
+  if (!previousEntries) {
+    alert("No change to undo.");
+    return;
+  }
+
+  entries = previousEntries;
+  previousEntries = null;
+
+  refreshDashboard();
 }
 
 function refreshDashboard() {
@@ -545,6 +563,33 @@ function exportToCsv() {
 
   URL.revokeObjectURL(url);
 }
+
+function parseCsvRow(row) {
+  const values = [];
+  let current = "";
+  let insideQuotes = false;
+
+  for (let i = 0; i < row.length; i++) {
+    const char = row[i];
+    const nextChar = row[i + 1];
+
+    if (char === '"' && insideQuotes && nextChar === '"') {
+      current += '"';
+      i++;
+    } else if (char === '"') {
+      insideQuotes = !insideQuotes;
+    } else if (char === "," && !insideQuotes) {
+      values.push(current);
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+
+  values.push(current);
+  return values.map((value) => value.trim());
+}
+
 function importFromCsv(event) {
   const file = event.target.files[0];
 
@@ -557,7 +602,7 @@ function importFromCsv(event) {
       const text = reader.result;
 
       const rows = text
-        .split("\n")
+        .split(/\r?\n/)
         .map((row) => row.trim())
         .filter((row) => row.length > 0);
 
@@ -569,25 +614,22 @@ function importFromCsv(event) {
       const importedEntries = [];
 
       for (let i = 1; i < rows.length; i++) {
-        const columns = rows[i]
-          .split(",")
-          .map((column) =>
-            column.replace(/^"|"$/g, "").trim()
-          );
+        const columns = parseCsvRow(rows[i]);
 
         importedEntries.push({
           id: Date.now() + Math.random(),
-          date: columns[0],
-          deviceType: columns[1],
-          estimatedTime: Number(columns[2]),
-          actualTime: Number(columns[3]),
-          downtime: Number(columns[4]),
-          errors: Number(columns[6]),
+          date: columns[0] || "",
+          deviceType: columns[1] || "Imported Device",
+          estimatedTime: Number(columns[2]) || 0,
+          actualTime: Number(columns[3]) || 0,
+          downtime: Number(columns[4]) || 0,
+          errors: Number(columns[6]) || 0,
           partsRequested: Number(columns[7]) || 0,
           notes: columns[9] || ""
         });
       }
 
+      saveUndoState();
       entries = [...importedEntries, ...entries];
 
       refreshDashboard();
@@ -603,6 +645,7 @@ function importFromCsv(event) {
 
   reader.readAsText(file);
 }
+
 function exportToJson() {
   if (entries.length === 0) {
     alert("No entries to back up yet.");
@@ -611,7 +654,7 @@ function exportToJson() {
 
   const backup = {
     app: "Operational Performance Dashboard",
-    version: "1.1",
+    version: "1.2",
     exportedAt: new Date().toISOString(),
     entries: entries
   };
@@ -648,6 +691,7 @@ function importFromJson(event) {
         return;
       }
 
+      saveUndoState();
       entries = backup.entries;
       refreshDashboard();
 
@@ -681,6 +725,7 @@ function editEntry(id) {
 }
 
 function deleteEntry(id) {
+  saveUndoState();
   entries = entries.filter((entry) => entry.id !== id);
   refreshDashboard();
 }
@@ -699,6 +744,8 @@ entryForm.addEventListener("submit", (event) => {
     downtime: Number(document.getElementById("downtime").value),
     notes: document.getElementById("notes").value.trim()
   };
+
+  saveUndoState();
 
   if (editingId) {
     entries = entries.map((entry) =>
@@ -787,6 +834,8 @@ function saveBatchEntries() {
     });
   }
 
+  saveUndoState();
+
   entries = [...newEntries.reverse(), ...entries];
 
   batchRowsEl.innerHTML = "";
@@ -872,9 +921,6 @@ clearFiltersBtn.addEventListener("click", () => {
 });
 
 exportCsvBtn.addEventListener("click", exportToCsv);
-if (importCsvInput) {
-  importCsvInput.addEventListener("change", importFromCsv);
-}
 
 if (exportJsonBtn) {
   exportJsonBtn.addEventListener("click", exportToJson);
@@ -882,6 +928,14 @@ if (exportJsonBtn) {
 
 if (importJsonInput) {
   importJsonInput.addEventListener("change", importFromJson);
+}
+
+if (importCsvInput) {
+  importCsvInput.addEventListener("change", importFromCsv);
+}
+
+if (undoBtn) {
+  undoBtn.addEventListener("click", undoLastChange);
 }
 
 if (addBatchRowBtn && saveBatchBtn) {
