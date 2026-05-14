@@ -17,6 +17,16 @@ const pauseTimerBtn = document.getElementById("pauseTimerBtn");
 const resetTimerBtn = document.getElementById("resetTimerBtn");
 const useTimerBtn = document.getElementById("useTimerBtn");
 
+const weeklyTasksEl = document.getElementById("weeklyTasks");
+const weeklyEfficiencyEl = document.getElementById("weeklyEfficiency");
+const weeklyWorkingTimeEl = document.getElementById("weeklyWorkingTime");
+const weeklyErrorsEl = document.getElementById("weeklyErrors");
+
+const monthlyTasksEl = document.getElementById("monthlyTasks");
+const monthlyEfficiencyEl = document.getElementById("monthlyEfficiency");
+const monthlyWorkingTimeEl = document.getElementById("monthlyWorkingTime");
+const monthlyErrorsEl = document.getElementById("monthlyErrors");
+
 let timerSeconds = 0;
 let timerInterval = null;
 
@@ -63,7 +73,78 @@ function getEfficiencyClass(efficiency) {
   if (efficiency >= 90) return "efficiency-orange";
   return "efficiency-red";
 }
+function isThisWeek(dateString) {
+  const entryDate = new Date(dateString);
+  const today = new Date();
 
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay());
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 7);
+
+  return entryDate >= startOfWeek && entryDate < endOfWeek;
+}
+
+function isThisMonth(dateString) {
+  const entryDate = new Date(dateString);
+  const today = new Date();
+
+  return (
+    entryDate.getFullYear() === today.getFullYear() &&
+    entryDate.getMonth() === today.getMonth()
+  );
+}
+
+function getOverviewStats(filteredEntries) {
+  const tasks = filteredEntries.length;
+
+  const totalEstimatedTime = filteredEntries.reduce(
+    (sum, entry) => sum + entry.estimatedTime,
+    0
+  );
+
+  const totalWorkingTime = filteredEntries.reduce(
+    (sum, entry) => sum + getWorkingTime(entry),
+    0
+  );
+
+  const errors = filteredEntries.reduce(
+    (sum, entry) => sum + entry.errors,
+    0
+  );
+
+  const efficiency =
+    totalWorkingTime > 0
+      ? Math.round((totalEstimatedTime / totalWorkingTime) * 100)
+      : 0;
+
+  return {
+    tasks,
+    efficiency,
+    workingTime: totalWorkingTime,
+    errors
+  };
+}
+
+function updateOverview() {
+  const weeklyEntries = entries.filter((entry) => isThisWeek(entry.date));
+  const monthlyEntries = entries.filter((entry) => isThisMonth(entry.date));
+
+  const weekly = getOverviewStats(weeklyEntries);
+  const monthly = getOverviewStats(monthlyEntries);
+
+  weeklyTasksEl.textContent = weekly.tasks;
+  weeklyEfficiencyEl.textContent = `${weekly.efficiency}%`;
+  weeklyWorkingTimeEl.textContent = `${weekly.workingTime} min`;
+  weeklyErrorsEl.textContent = weekly.errors;
+
+  monthlyTasksEl.textContent = monthly.tasks;
+  monthlyEfficiencyEl.textContent = `${monthly.efficiency}%`;
+  monthlyWorkingTimeEl.textContent = `${monthly.workingTime} min`;
+  monthlyErrorsEl.textContent = monthly.errors;
+}
 function updateStats() {
   const totalDevices = entries.length;
 
@@ -333,6 +414,7 @@ function deleteEntry(id) {
   renderEntries();
   renderChart();
   updateStats();
+  updateOverview();
 }
 
 entryForm.addEventListener("submit", (event) => {
@@ -364,6 +446,7 @@ entryForm.addEventListener("submit", (event) => {
   renderEntries();
   renderChart();
   updateStats();
+  updateOverview();
 
   entryForm.reset();
   document.getElementById("workDate").valueAsDate = new Date();
@@ -470,3 +553,4 @@ document.getElementById("workDate").valueAsDate = new Date();
 renderEntries();
 renderChart();
 updateStats();
+updateOverview();
