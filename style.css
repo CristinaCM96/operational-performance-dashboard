@@ -486,9 +486,14 @@ select:focus {
 .overview-stats strong {
   color: var(--text);
 }
+.chart-panel {
+  margin-bottom: 32px;
+}
 .analytics-grid {
-  margin-bottom: 24px;
-  padding: 22px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 32px;
 }
 
 .analytics-grid .panel {
