@@ -451,14 +451,6 @@ select:focus {
   gap: 16px;
   margin-bottom: 24px;
 }
-
-.overview-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
 .overview-card {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -492,13 +484,20 @@ select:focus {
 }
 .analytics-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: 24px;
-  margin-bottom: 32px;
+  margin-bottom: 40px;
 }
 
 .analytics-grid .panel {
-  margin-bottom: 24px;
+  margin-bottom: 0;
+}
+
+.mini-chart-wrapper {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  margin-top: 20px;
 }
 @media (max-width: 650px) {
   .overview-grid {
