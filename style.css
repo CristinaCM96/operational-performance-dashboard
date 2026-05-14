@@ -77,7 +77,7 @@ h1 {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .stat-card,
@@ -103,13 +103,21 @@ h1 {
   font-size: 2rem;
 }
 
+/* GLOBAL SECTION SPACING */
+
+.overview-grid,
+.analytics-grid,
+.chart-panel,
+.layout {
+  margin-bottom: 32px;
+}
+
 /* OVERVIEW */
 
 .overview-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
-  margin-bottom: 32px;
 }
 
 .overview-card {
@@ -161,7 +169,7 @@ h1 {
 /* CHARTS */
 
 .chart-panel {
-  margin-bottom: 32px;
+  width: 100%;
 }
 
 .chart-wrapper {
@@ -175,11 +183,6 @@ h1 {
   display: grid;
   grid-template-columns: 1fr;
   gap: 32px;
-  margin-bottom: 32px;
-}
-
-.analytics-grid .panel {
-  width: 100%;
 }
 
 .mini-chart-wrapper {
@@ -215,7 +218,7 @@ h1 {
   font-size: 3rem;
 }
 
-/* LAYOUT */
+/* MAIN LAYOUT */
 
 .layout {
   display: grid;
