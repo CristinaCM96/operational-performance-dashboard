@@ -7,6 +7,7 @@ const avgTimeEl = document.getElementById("avgTime");
 const totalErrorsEl = document.getElementById("totalErrors");
 const efficiencyScoreEl = document.getElementById("efficiencyScore");
 const errorRateEl = document.getElementById("errorRate");
+const successTargetEl = document.getElementById("successTarget");
 
 const searchInput = document.getElementById("searchInput");
 const filterDate = document.getElementById("filterDate");
@@ -190,6 +191,25 @@ const errorRate =
     : 0;
 
 errorRateEl.textContent = `${errorRate}%`;
+const successfulDevices = totalDevices - totalErrors;
+const successRate =
+  totalDevices > 0
+    ? Math.round((successfulDevices / totalDevices) * 100)
+    : 0;
+
+let neededFor90 = 0;
+
+while (
+  totalDevices + neededFor90 > 0 &&
+  ((successfulDevices + neededFor90) / (totalDevices + neededFor90)) * 100 < 90
+) {
+  neededFor90++;
+}
+
+successTargetEl.textContent =
+  successRate >= 90
+    ? "On target"
+    : `${neededFor90} clean`;
 }
 
 function renderChart() {
