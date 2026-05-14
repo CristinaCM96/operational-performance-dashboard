@@ -2,6 +2,7 @@ const entryForm = document.getElementById("entryForm");
 const entryList = document.getElementById("entryList");
 
 const exportCsvBtn = document.getElementById("exportCsvBtn");
+const importCsvInput = document.getElementById("importCsvInput");
 const exportJsonBtn = document.getElementById("exportJsonBtn");
 const importJsonInput = document.getElementById("importJsonInput");
 
@@ -544,7 +545,64 @@ function exportToCsv() {
 
   URL.revokeObjectURL(url);
 }
+function importFromCsv(event) {
+  const file = event.target.files[0];
 
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function () {
+    try {
+      const text = reader.result;
+
+      const rows = text
+        .split("\n")
+        .map((row) => row.trim())
+        .filter((row) => row.length > 0);
+
+      if (rows.length <= 1) {
+        alert("CSV file is empty.");
+        return;
+      }
+
+      const importedEntries = [];
+
+      for (let i = 1; i < rows.length; i++) {
+        const columns = rows[i]
+          .split(",")
+          .map((column) =>
+            column.replace(/^"|"$/g, "").trim()
+          );
+
+        importedEntries.push({
+          id: Date.now() + Math.random(),
+          date: columns[0],
+          deviceType: columns[1],
+          estimatedTime: Number(columns[2]),
+          actualTime: Number(columns[3]),
+          downtime: Number(columns[4]),
+          errors: Number(columns[6]),
+          partsRequested: Number(columns[7]) || 0,
+          notes: columns[9] || ""
+        });
+      }
+
+      entries = [...importedEntries, ...entries];
+
+      refreshDashboard();
+
+      alert("CSV imported successfully.");
+    } catch (error) {
+      console.error(error);
+      alert("Could not import CSV.");
+    }
+
+    importCsvInput.value = "";
+  };
+
+  reader.readAsText(file);
+}
 function exportToJson() {
   if (entries.length === 0) {
     alert("No entries to back up yet.");
@@ -814,6 +872,9 @@ clearFiltersBtn.addEventListener("click", () => {
 });
 
 exportCsvBtn.addEventListener("click", exportToCsv);
+if (importCsvInput) {
+  importCsvInput.addEventListener("change", importFromCsv);
+}
 
 if (exportJsonBtn) {
   exportJsonBtn.addEventListener("click", exportToJson);
