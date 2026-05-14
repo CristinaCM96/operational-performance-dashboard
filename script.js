@@ -8,6 +8,7 @@ const totalErrorsEl = document.getElementById("totalErrors");
 const efficiencyScoreEl = document.getElementById("efficiencyScore");
 const errorRateEl = document.getElementById("errorRate");
 const successTargetEl = document.getElementById("successTarget");
+const successRateEl = document.getElementById("successRate");
 
 const searchInput = document.getElementById("searchInput");
 const filterDate = document.getElementById("filterDate");
@@ -210,6 +211,22 @@ successTargetEl.textContent =
   successRate >= 90
     ? "On target"
     : `${neededFor90} clean`;
+
+const successfulDevices = Math.max(totalDevices - totalErrors, 0);
+
+const successRate =
+  totalDevices > 0
+    ? Math.round((successfulDevices / totalDevices) * 100)
+    : 0;
+successRateEl.textContent = `${successRate}%`;
+
+if (successRate >= 95) {
+  successRateEl.style.color = "#4ade80";
+} else if (successRate >= 90) {
+  successRateEl.style.color = "#facc15";
+} else {
+  successRateEl.style.color = "#f87171";
+}
 }
 
 function renderChart() {
