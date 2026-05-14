@@ -288,21 +288,40 @@ function renderDevicesErrorsChart() {
 
   const displayEntries = getFilteredAndSortedEntries();
 
-  const chartData = displayEntries.map((entry) => ({
-    x: 1,
-    y: entry.errors,
-    label: entry.deviceType
-  }));
+  const deviceStats = {};
+
+  displayEntries.forEach((entry) => {
+    if (!deviceStats[entry.deviceType]) {
+      deviceStats[entry.deviceType] = {
+        completed: 0,
+        errors: 0
+      };
+    }
+
+    deviceStats[entry.deviceType].completed += 1;
+    deviceStats[entry.deviceType].errors += entry.errors;
+  });
+
+  const labels = Object.keys(deviceStats);
+  const completedData = labels.map((device) => deviceStats[device].completed);
+  const errorData = labels.map((device) => deviceStats[device].errors);
 
   devicesErrorsChartInstance = new Chart(canvas, {
-    type: "scatter",
+    type: "bar",
     data: {
+      labels: labels,
       datasets: [
         {
-          label: "Devices vs Errors",
-          data: chartData,
-          backgroundColor: "#facc15",
-          pointRadius: 8
+          label: "Devices Completed",
+          data: completedData,
+          backgroundColor: "#4ade80",
+          borderRadius: 8
+        },
+        {
+          label: "Errors",
+          data: errorData,
+          backgroundColor: "#f87171",
+          borderRadius: 8
         }
       ]
     },
@@ -310,28 +329,16 @@ function renderDevicesErrorsChart() {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        tooltip: {
-          callbacks: {
-            label(context) {
-              const point = context.raw;
-              return `${point.label}: ${point.y} errors`;
-            }
-          }
-        },
         legend: {
-          display: false
+          labels: {
+            color: "#f9fafb"
+          }
         }
       },
       scales: {
         x: {
-          title: {
-            display: true,
-            text: "Devices Completed",
-            color: "#9ca3af"
-          },
           ticks: {
-            color: "#9ca3af",
-            stepSize: 1
+            color: "#9ca3af"
           },
           grid: {
             color: "#374151"
@@ -339,11 +346,6 @@ function renderDevicesErrorsChart() {
         },
         y: {
           beginAtZero: true,
-          title: {
-            display: true,
-            text: "Errors",
-            color: "#9ca3af"
-          },
           ticks: {
             color: "#9ca3af",
             stepSize: 1
