@@ -501,6 +501,7 @@ function deleteEntry(id) {
   saveEntries();
   renderEntries();
   renderChart();
+  renderDevicesErrorsChart();
   updateStats();
   updateOverview();
 }
@@ -533,6 +534,7 @@ entryForm.addEventListener("submit", (event) => {
   saveEntries();
   renderEntries();
   renderChart();
+  renderDevicesErrorsChart();
   updateStats();
   updateOverview();
 
@@ -590,6 +592,7 @@ entryList.addEventListener("click", (event) => {
 function refreshFilteredViews() {
   renderEntries();
   renderChart();
+  renderDevicesErrorsChart();
 }
 
 searchInput.addEventListener("input", refreshFilteredViews);
@@ -640,5 +643,6 @@ document.getElementById("workDate").valueAsDate = new Date();
 
 renderEntries();
 renderChart();
+renderDevicesErrorsChart();
 updateStats();
 updateOverview();
