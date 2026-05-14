@@ -11,6 +11,14 @@ const searchInput = document.getElementById("searchInput");
 const filterDate = document.getElementById("filterDate");
 const clearFiltersBtn = document.getElementById("clearFiltersBtn");
 const sortSelect = document.getElementById("sortSelect");
+const timerDisplay = document.getElementById("timerDisplay");
+const startTimerBtn = document.getElementById("startTimerBtn");
+const pauseTimerBtn = document.getElementById("pauseTimerBtn");
+const resetTimerBtn = document.getElementById("resetTimerBtn");
+const useTimerBtn = document.getElementById("useTimerBtn");
+
+let timerSeconds = 0;
+let timerInterval = null;
 
 let entries = JSON.parse(localStorage.getItem("opsTrackerEntries")) || [];
 let editingId = null;
@@ -360,7 +368,42 @@ entryForm.addEventListener("submit", (event) => {
   entryForm.reset();
   document.getElementById("workDate").valueAsDate = new Date();
 });
+function formatTimer(seconds) {
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
 
+  return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+}
+
+function updateTimerDisplay() {
+  timerDisplay.textContent = formatTimer(timerSeconds);
+}
+
+function startTimer() {
+  if (timerInterval) return;
+
+  timerInterval = setInterval(() => {
+    timerSeconds++;
+    updateTimerDisplay();
+  }, 1000);
+}
+
+function pauseTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+function resetTimer() {
+  pauseTimer();
+  timerSeconds = 0;
+  updateTimerDisplay();
+}
+
+function useTimerTime() {
+  const roundedMinutes = Math.max(Math.round(timerSeconds / 60), 1);
+  document.getElementById("actualTime").value = roundedMinutes;
+}
 entryList.addEventListener("click", (event) => {
   if (event.target.classList.contains("delete-btn")) {
     const id = Number(event.target.dataset.id);
@@ -415,7 +458,10 @@ document.addEventListener("keydown", (event) => {
     exportToCsv();
   }
 });
-
+startTimerBtn.addEventListener("click", startTimer);
+pauseTimerBtn.addEventListener("click", pauseTimer);
+resetTimerBtn.addEventListener("click", resetTimer);
+useTimerBtn.addEventListener("click", useTimerTime);
 document.getElementById("workDate").valueAsDate = new Date();
 
 renderEntries();

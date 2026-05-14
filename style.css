@@ -401,6 +401,49 @@ select:focus {
 .chart-empty-icon {
   font-size: 3rem;
 }
+
+.timer-panel {
+  display: grid;
+  gap: 16px;
+  background: var(--panel-soft);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 20px;
+}
+
+.timer-label {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+#timerDisplay {
+  font-size: 2rem;
+  letter-spacing: 0.05em;
+}
+
+.timer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.timer-actions button {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  padding: 9px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.timer-actions button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
 @media (max-width: 650px) {
   .filters {
     grid-template-columns: 1fr;
