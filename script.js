@@ -768,7 +768,7 @@ entryForm.addEventListener("submit", (event) => {
   entryForm.reset();
   document.getElementById("workDate").valueAsDate = new Date();
   resetTimer();
-}
+});
 
 function createBatchRow() {
   batchRowCount++;
