@@ -20,6 +20,7 @@ const searchInput = document.getElementById("searchInput");
 const filterDate = document.getElementById("filterDate");
 const clearFiltersBtn = document.getElementById("clearFiltersBtn");
 const sortSelect = document.getElementById("sortSelect");
+const statusFilter = document.getElementById("statusFilter");
 
 const timerDisplay = document.getElementById("timerDisplay");
 const startTimerBtn = document.getElementById("startTimerBtn");
@@ -99,12 +100,15 @@ function getEfficiency(entry) {
 function getFilteredAndSortedEntries() {
   const searchValue = searchInput.value.toLowerCase();
   const selectedDate = filterDate.value;
+  const selectedStatus = statusFilter.value;
 
   const filteredEntries = entries.filter((entry) => {
     const matchesSearch = entry.deviceType.toLowerCase().includes(searchValue);
     const matchesDate = !selectedDate || entry.date === selectedDate;
+    const matchesStatus =
+      selectedStatus === "all" || (entry.status || "completed") === selectedStatus;
 
-    return matchesSearch && matchesDate;
+    return matchesSearch && matchesDate && matchesStatus;
   });
 
   return [...filteredEntries].sort((a, b) => {
@@ -504,6 +508,7 @@ function renderEntries() {
         <p><strong>${entry.errors}</strong> errors</p>
         <p><strong>${entry.partsRequested || 0}</strong> parts requested</p>
         <p><strong>${entry.downtime}</strong> min downtime</p>
+        <p><strong>${entry.status || "completed"}</strong> status</p>
       </div>
 
       ${entry.notes ? `<p class="entry-notes">${entry.notes}</p>` : ""}
@@ -529,6 +534,7 @@ function exportToCsv() {
     "Errors",
     "Parts Requested",
     "Efficiency",
+    "Status",
     "Notes"
   ];
 
@@ -542,6 +548,7 @@ function exportToCsv() {
     entry.errors,
     entry.partsRequested || 0,
     `${getEfficiency(entry)}%`,
+    entry.status || "completed",
     entry.notes
   ]);
 
@@ -724,6 +731,7 @@ function editEntry(id) {
   document.getElementById("partsRequested").value = entryToEdit.partsRequested || 0;
   document.getElementById("downtime").value = entryToEdit.downtime;
   document.getElementById("notes").value = entryToEdit.notes;
+  document.getElementById("status").value = entryToEdit.status || "completed";
 
   editingId = id;
   document.querySelector(".primary-btn").textContent = "Update Entry";
@@ -748,6 +756,7 @@ entryForm.addEventListener("submit", (event) => {
     partsRequested: Number(document.getElementById("partsRequested").value),
     downtime: Number(document.getElementById("downtime").value),
     notes: document.getElementById("notes").value.trim()
+    status: document.getElementById("status").value,
   };
 
   saveUndoState();
@@ -790,6 +799,11 @@ function createBatchRow() {
       <input type="number" class="batch-parts" min="0" placeholder="Parts requested" required />
       <input type="number" class="batch-downtime" min="0" placeholder="Downtime min" required />
       <textarea class="batch-notes" rows="2" placeholder="Optional notes"></textarea>
+      <select class="batch-status" required>
+        <option value="completed">Completed</option>
+        <option value="hard-fail">Hard Fail</option>
+        <option value="awp">AWP</option>
+      </select>
     </div>
   `;
 
@@ -814,6 +828,7 @@ function saveBatchEntries() {
 
   for (const row of rows) {
     const deviceType = row.querySelector(".batch-device").value.trim();
+    const status = row.querySelector(".batch-status").value;
     const estimatedTime = Number(row.querySelector(".batch-estimated").value);
     const actualTime = Number(row.querySelector(".batch-actual").value);
     const errors = Number(row.querySelector(".batch-errors").value);
@@ -835,7 +850,8 @@ function saveBatchEntries() {
       errors,
       partsRequested,
       downtime,
-      notes
+      notes,
+      status
     });
   }
 
@@ -916,11 +932,13 @@ function refreshFilteredViews() {
 searchInput.addEventListener("input", refreshFilteredViews);
 filterDate.addEventListener("change", refreshFilteredViews);
 sortSelect.addEventListener("change", refreshFilteredViews);
+statusFilter.addEventListener("change", refreshFilteredViews);
 
 clearFiltersBtn.addEventListener("click", () => {
   searchInput.value = "";
   filterDate.value = "";
   sortSelect.value = "newest";
+  statusFilter.value = "all";
 
   refreshFilteredViews();
 });

@@ -145,6 +145,15 @@
           </div>
 
           <div class="form-row">
+            <label for="status">Status</label>
+            <select id="status" required />
+            <option value="completed">Completed</option>
+            <option value="hard-fail">Hard Fail</option>
+            <option value="awp">AWP</option>
+            </select>
+          </div>
+
+          <div class="form-row">
             <label for="estimatedTime">Estimated Time</label>
             <input type="number" id="estimatedTime" min="0" placeholder="Minutes" required />
           </div>
@@ -246,7 +255,12 @@
           <option value="worst">Worst efficiency</option>
           <option value="errors">Most errors</option>
         </select>
-
+        <select id="statusFilter">
+          <option value="all">All statuses</option>
+          <option value="completed">Completed</option>
+          <option value="hard-fail">Hard Fail</option>
+          <option value="awp">AWP</option>
+        </select>
         <button id="clearFiltersBtn" class="secondary-btn">Clear</button>
       </div>
 
