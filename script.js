@@ -637,7 +637,8 @@ function importFromCsv(event) {
           downtime: Number(columns[4]) || 0,
           errors: Number(columns[6]) || 0,
           partsRequested: Number(columns[7]) || 0,
-          notes: columns[9] || ""
+          status: columns[9] || "completed",
+          notes: columns[10] || ""
         });
       }
 
@@ -755,8 +756,8 @@ entryForm.addEventListener("submit", (event) => {
     errors: Number(document.getElementById("errors").value),
     partsRequested: Number(document.getElementById("partsRequested").value),
     downtime: Number(document.getElementById("downtime").value),
-    notes: document.getElementById("notes").value.trim()
-    status: document.getElementById("status").value,
+    notes: document.getElementById("notes").value.trim(),
+    status: document.getElementById("status").value
   };
 
   saveUndoState();
