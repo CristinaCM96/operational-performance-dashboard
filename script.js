@@ -52,6 +52,7 @@ let timerInterval = null;
 
 let batchRowCount = 0;
 
+let monthComparisonChartInstance = null;
 let efficiencyChartInstance = null;
 let devicesErrorsChartInstance = null;
 
@@ -84,6 +85,7 @@ function refreshDashboard() {
   saveEntries();
   renderEntries();
   renderChart();
+  renderMonthComparisonChart();
   renderDevicesErrorsChart();
   updateStats();
   updateOverview();
@@ -126,6 +128,12 @@ function getEfficiencyClass(efficiency) {
   if (efficiency >= 120) return "efficiency-green";
   if (efficiency >= 90) return "efficiency-orange";
   return "efficiency-red";
+}
+
+function getStatusClass(status) {
+  if (status === "hard-fail") return "status-hard-fail";
+  if (status === "awp") return "status-awp";
+  return "status-completed";
 }
 
 function isThisWeek(dateString) {
@@ -181,6 +189,94 @@ function getOverviewStats(filteredEntries) {
     workingTime: totalWorkingTime,
     errors
   };
+}
+
+function renderMonthComparisonChart() {
+  const canvas = document.getElementById("monthComparisonChart");
+
+  if (!canvas) return;
+
+  if (monthComparisonChartInstance) {
+    monthComparisonChartInstance.destroy();
+    monthComparisonChartInstance = null;
+  }
+
+  const monthStats = {};
+
+  entries.forEach((entry) => {
+    const month = entry.date.slice(0, 7);
+
+    if (!monthStats[month]) {
+      monthStats[month] = {
+        devices: 0,
+        errors: 0,
+        parts: 0,
+        workingTime: 0
+      };
+    }
+
+    monthStats[month].devices += 1;
+    monthStats[month].errors += entry.errors;
+    monthStats[month].parts += entry.partsRequested || 0;
+    monthStats[month].workingTime += getWorkingTime(entry);
+  });
+
+  const labels = Object.keys(monthStats).sort();
+
+  monthComparisonChartInstance = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Devices",
+          data: labels.map((month) => monthStats[month].devices),
+          backgroundColor: "#4ade80",
+          borderRadius: 8
+        },
+        {
+          label: "Errors",
+          data: labels.map((month) => monthStats[month].errors),
+          backgroundColor: "#f87171",
+          borderRadius: 8
+        },
+        {
+          label: "Parts",
+          data: labels.map((month) => monthStats[month].parts),
+          backgroundColor: "#facc15",
+          borderRadius: 8
+        },
+        {
+          label: "Working Time",
+          data: labels.map((month) => monthStats[month].workingTime),
+          backgroundColor: "#38bdf8",
+          borderRadius: 8
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: "#f9fafb"
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: "#9ca3af" },
+          grid: { color: "#374151" }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { color: "#9ca3af" },
+          grid: { color: "#374151" }
+        }
+      }
+    }
+  });
 }
 
 function updateOverview() {
@@ -480,6 +576,7 @@ function renderEntries() {
     const entryWorkingTime = getWorkingTime(entry);
     const entryEfficiency = getEfficiency(entry);
     const efficiencyClass = getEfficiencyClass(entryEfficiency);
+    const statusClass = getStatusClass(entry.status || "completed");
 
     const entryCard = document.createElement("article");
     entryCard.className = "entry-card";
@@ -508,7 +605,7 @@ function renderEntries() {
         <p><strong>${entry.errors}</strong> errors</p>
         <p><strong>${entry.partsRequested || 0}</strong> parts requested</p>
         <p><strong>${entry.downtime}</strong> min downtime</p>
-        <p><strong>${entry.status || "completed"}</strong> status</p>
+        <p><strong class="status-badge ${statusClass}">${entry.status || "completed"}</strong>status</p>
       </div>
 
       ${entry.notes ? `<p class="entry-notes">${entry.notes}</p>` : ""}
@@ -1008,3 +1105,4 @@ renderChart();
 renderDevicesErrorsChart();
 updateStats();
 updateOverview();
+renderMonthComparisonChart();
