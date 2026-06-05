@@ -43,6 +43,11 @@ const batchRowsEl = document.getElementById("batchRows");
 const addBatchRowBtn = document.getElementById("addBatchRowBtn");
 const saveBatchBtn = document.getElementById("saveBatchBtn");
 
+const hardFailCountEl = document.getElementById("hardFailCount");
+const awpCountEl = document.getElementById("awpCount");
+const blockedCountEl = document.getElementById("blockedCount");
+const blockedPartsEl = document.getElementById("blockedParts");
+
 let entries = JSON.parse(localStorage.getItem("opsTrackerEntries")) || [];
 let previousEntries = null;
 let editingId = null;
@@ -89,6 +94,7 @@ function refreshDashboard() {
   renderDevicesErrorsChart();
   updateStats();
   updateOverview();
+  updateBlockedOverview();
 }
 
 function getWorkingTime(entry) {
@@ -122,6 +128,9 @@ function getFilteredAndSortedEntries() {
 
     return 0;
   });
+}
+function getCompletedEntries() {
+  return entries.filter((entry) => (entry.status || "completed") === "completed");
 }
 
 function getEfficiencyClass(efficiency) {
@@ -191,6 +200,22 @@ function getOverviewStats(filteredEntries) {
   };
 }
 
+function updateBlockedOverview() {
+  const hardFailEntries = entries.filter((entry) => entry.status === "hard-fail");
+  const awpEntries = entries.filter((entry) => entry.status === "awp");
+
+  const blockedEntries = [...hardFailEntries, ...awpEntries];
+
+  hardFailCountEl.textContent = hardFailEntries.length;
+  awpCountEl.textContent = awpEntries.length;
+  blockedCountEl.textContent = blockedEntries.length;
+
+  blockedPartsEl.textContent = blockedEntries.reduce(
+    (sum, entry) => sum + (entry.partsRequested || 0),
+    0
+  );
+}
+
 function renderMonthComparisonChart() {
   const canvas = document.getElementById("monthComparisonChart");
 
@@ -202,7 +227,11 @@ function renderMonthComparisonChart() {
   }
 
   const monthStats = {};
-  const displayEntries = getFilteredAndSortedEntries();
+
+  const displayEntries = getFilteredAndSortedEntries().filter(
+  (entry) => (entry.status || "completed") === "completed"
+  );
+
   displayEntries.forEach((entry) => {
     const month = entry.date.slice(0, 7);
 
@@ -298,21 +327,22 @@ function updateOverview() {
 }
 
 function updateStats() {
-  const totalDevices = entries.length;
+  const completedEntries = getCompletedEntries();
+  const totalDevices = completedEntries.length;
 
-  const totalEstimatedTime = entries.reduce(
+  const totalEstimatedTime = completedEntries.reduce(
     (sum, entry) => sum + entry.estimatedTime,
     0
   );
 
-  const totalWorkingTime = entries.reduce(
+  const totalWorkingTime = completedEntries.reduce(
     (sum, entry) => sum + getWorkingTime(entry),
     0
   );
 
-  const totalErrors = entries.reduce((sum, entry) => sum + entry.errors, 0);
+  const totalErrors = completedEntries.reduce((sum, entry) => sum + entry.errors, 0);
 
-  const totalParts = entries.reduce(
+  const totalParts = completedEntries.reduce(
     (sum, entry) => sum + (entry.partsRequested || 0),
     0
   );
@@ -401,8 +431,9 @@ function renderChart() {
   chartWrapper.innerHTML = `<canvas id="efficiencyChart"></canvas>`;
 
   const canvas = document.getElementById("efficiencyChart");
-  const displayEntries = getFilteredAndSortedEntries();
-
+  const displayEntries = getFilteredAndSortedEntries().filter(
+  (entry) => (entry.status || "completed") === "completed"
+);
   if (displayEntries.length === 0) {
     chartWrapper.innerHTML = `
       <div class="chart-empty-state">
@@ -480,7 +511,9 @@ function renderDevicesErrorsChart() {
     devicesErrorsChartInstance = null;
   }
 
-  const displayEntries = getFilteredAndSortedEntries();
+  const displayEntries = getFilteredAndSortedEntries().filter(
+  (entry) => (entry.status || "completed") === "completed"
+);
 
   const deviceStats = {};
 
@@ -1107,3 +1140,4 @@ renderChart();
 renderDevicesErrorsChart();
 updateStats();
 updateOverview();
+updateBlockedOverview();
