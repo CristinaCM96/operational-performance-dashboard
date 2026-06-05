@@ -385,9 +385,9 @@ function updateStats() {
   if (efficiency >= 120) {
     efficiencyScoreEl.style.color = "#4ade80";
   } else if (efficiency >= 90) {
-    efficiencyScoreEl.style.color = "#facc15";
+    efficiencyScoreEl.style.color = "#fa7c15";
   } else {
-    efficiencyScoreEl.style.color = "#f87171";
+    efficiencyScoreEl.style.color = "#f74747";
   }
 
   const errorsPerDeviceNumber = Number(errorsPerDevice);
@@ -395,17 +395,17 @@ function updateStats() {
   if (errorsPerDeviceNumber <= 0.05) {
     errorRateEl.style.color = "#4ade80";
   } else if (errorsPerDeviceNumber <= 0.1) {
-    errorRateEl.style.color = "#facc15";
+    errorRateEl.style.color = "#fa7c15";
   } else {
-    errorRateEl.style.color = "#f87171";
+    errorRateEl.style.color = "#f74747";
   }
 
   if (successRate >= 95) {
     successRateEl.style.color = "#4ade80";
   } else if (successRate >= 90) {
-    successRateEl.style.color = "#facc15";
+    successRateEl.style.color = "#fa7c15";
   } else {
-    successRateEl.style.color = "#f87171";
+    successRateEl.style.color = "#f74747";
   }
 }
 
@@ -453,8 +453,8 @@ function renderChart() {
 
   const colors = data.map((efficiency) => {
     if (efficiency >= 120) return "#4ade80";
-    if (efficiency >= 90) return "#facc15";
-    return "#f87171";
+    if (efficiency >= 90) return "#fa7c15";
+    return "#f74747";
   });
 
   efficiencyChartInstance = new Chart(canvas, {
