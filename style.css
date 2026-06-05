@@ -442,8 +442,8 @@ select:focus {
 }
 
 .efficiency-red {
-  background: rgba(248, 113, 113, 0.12);
-  color: #f87171;
+  background: rgba(247, 71, 71, 0.12);
+  color: rgb(247, 71, 71);
 }
 
 .batch-date-row {
