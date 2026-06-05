@@ -266,7 +266,7 @@ function renderMonthComparisonChart() {
         {
           label: "Errors",
           data: labels.map((month) => monthStats[month].errors),
-          backgroundColor: "#f87171",
+          backgroundColor: "#f74747",
           borderRadius: 8
         },
         {
@@ -547,7 +547,7 @@ function renderDevicesErrorsChart() {
         {
           label: "Errors",
           data: errorData,
-          backgroundColor: "#f87171",
+          backgroundColor: "#f74747",
           borderRadius: 8
         }
       ]
