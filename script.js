@@ -202,8 +202,8 @@ function renderMonthComparisonChart() {
   }
 
   const monthStats = {};
-
-  entries.forEach((entry) => {
+  const displayEntries = getFilteredAndSortedEntries();
+  displayEntries.forEach((entry) => {
     const month = entry.date.slice(0, 7);
 
     if (!monthStats[month]) {
@@ -380,7 +380,7 @@ function updateStats() {
 }
 
 function renderChart() {
-  const chartWrapper = document.querySelector(".chart-wrapper");
+  const chartWrapper = document.getElementById("efficiencyChartWrapper");
 
   if (efficiencyChartInstance) {
     efficiencyChartInstance.destroy();
@@ -605,7 +605,7 @@ function renderEntries() {
         <p><strong>${entry.errors}</strong> errors</p>
         <p><strong>${entry.partsRequested || 0}</strong> parts requested</p>
         <p><strong>${entry.downtime}</strong> min downtime</p>
-        <p><strong class="status-badge ${statusClass}">${entry.status || "completed"}</strong>status</p>
+        <p><strong class="status-badge ${statusClass}">${entry.status || "completed"}</strong> status</p>
       </div>
 
       ${entry.notes ? `<p class="entry-notes">${entry.notes}</p>` : ""}
@@ -1023,6 +1023,7 @@ batchRowsEl.addEventListener("click", (event) => {
 
 function refreshFilteredViews() {
   renderEntries();
+  renderMonthComparisonChart();
   renderChart();
   renderDevicesErrorsChart();
 }
@@ -1101,8 +1102,8 @@ batchDateInput.valueAsDate = new Date();
 createBatchRow();
 
 renderEntries();
+renderMonthComparisonChart();
 renderChart();
 renderDevicesErrorsChart();
 updateStats();
 updateOverview();
-renderMonthComparisonChart();
